@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3f51b5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="divider">#bdbdbd</color>
+    <color name="bluetoothDialog">#e8eaf6</color>
+    <color name="wheelOff">#ff1744</color>
+    <color name="wheelConnected">#bdbdbd</color>
+    <color name="wheelOn">#00c853</color>
+    <color name="wheelCross">#304ffe</color>
+    <color name="androidBackground">#FAFAFA</color>
+    <color name="selected">#90caf9</color>
+    <color name="red">#ffc8c8</color>
+    <color name="green">#c8ffc8</color>
+    <color name="blue">#c8c8ff</color>
+    <color name="white">#FFFFFF</color>
+</resources>
+

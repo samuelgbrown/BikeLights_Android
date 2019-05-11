@@ -1,0 +1,23 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="to.us.suncloud.bikelights.MainActivity">
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="@string/action_settings"
+        android:icon="@drawable/settings"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_bluetooth"
+        android:orderInCategory="1"
+        android:title="@string/action_bluetooth"
+        android:icon="@drawable/bluetooth"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_bookmarks"
+        android:orderInCategory="2"
+        android:title="@string/action_bookmarks"
+        android:icon="@drawable/bookmarks_manage"
+        app:showAsAction="ifRoom" />
+</menu>

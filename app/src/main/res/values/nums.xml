@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="num_leds">120</integer>
+    <integer name="max_speed">200</integer>
+    <integer name="double_max_speed">400</integer>
+    <integer name="max_inertia">100</integer>
+    <integer name="max_color_val">255</integer>
+    <integer name="num_image_mod_type_drawables">255</integer>
+</resources>

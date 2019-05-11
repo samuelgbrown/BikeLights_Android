@@ -1,0 +1,209 @@
+<resources>
+    <string name="app_name">Bike Lights</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_bluetooth">Bluetooth</string>
+    <string name="action_bookmarks">Manage Bookmarks</string>
+    <string name="bookmark">Bookmark Animation</string>
+    <string name="save">Save</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_title_social_recommendations">Enable social recommendations</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
+
+    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_default_display_name">John Smith</string>
+
+    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
+    <string-array name="pref_example_list_titles">
+        <item>Always</item>
+        <item>When possible</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_example_list_values">
+        <item>1</item>
+        <item>0</item>
+        <item>-1</item>
+    </string-array>
+
+    <!-- Example settings for Data & Sync -->
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+
+    <string name="pref_title_sync_frequency">Sync frequency</string>
+    <string-array name="pref_sync_frequency_titles">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>180</item>
+        <item>360</item>
+        <item>-1</item>
+    </string-array>
+
+    <string-array name="list_preference_entries">
+        <item>Entry 1</item>
+        <item>Entry 2</item>
+        <item>Entry 3</item>
+    </string-array>
+
+    <string-array name="list_preference_entry_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="multi_select_list_preference_default_value" />
+
+    <string name="pref_title_system_sync_settings">System sync settings</string>
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_header_notifications">Notifications</string>
+
+    <string name="pref_title_new_message_notifications">New message notifications</string>
+
+    <string name="pref_title_ringtone">Ringtone</string>
+    <string name="pref_ringtone_silent">Silent</string>
+
+    <string name="pref_title_vibrate">Vibrate</string>
+
+    // Custom strings
+    <string name="rearTextview">Rear Wheel</string>
+    <string name="frontTextView">Front Wheel</string>to/us/suncloud/bikelights/MainActivity.java:35
+    <string name="bluetooth_title">Select Bluetooth Devices</string>
+    <string name="bluetooth_paired">Paired</string>
+    <string name="bluetooth_available">Available</string>
+    <string name="bluetooth_scan">Scan</string>
+    <string name="no_bluetooth_message">Bluetooth adapter is not detected.  The app will now close.</string>
+    <string name="no_bluetooth_close">Close Application</string>
+    <string name="paired_empty_view">There are no paired Bluetooth devices.  Click "Scan" below to search for discoverable devices in the area.</string>
+    <string name="available_empty_view_prescan">There are no available Bluetooth devices.  Click "Scan" below to search for discoverable devices in the area.</string>
+    <string name="available_empty_view_scanning">Searching for discoverable devices…</string>
+
+    <string name="image_mod_title">Color Placement</string>
+
+    <string name="dialog_front_rear">Which wheel should this device be assigned to?</string>
+    <string name="front">Front</string>
+    <string name="rear">Rear</string>
+    <string name="cancel">Cancel</string>
+    <string name="done">Done</string>
+    <string name="apply">Apply</string>
+    <string name="delete">Delete</string>
+
+    <string name="dialog_savedbwa_title">Saved Animations</string>
+    <string name="dialog_savedbwa_message">Please select a saved Animation to apply to the wheel.</string>
+    <string name="bwa_empty">It seems there are no saved Animations. Try creating one and bookmarking it!</string>
+    <string name="bwa_bookmark_message">Create a bookmark name for your Animation:</string>
+    <string name="bwa_empty_name">[Unnamed]</string>
+
+    <string name="uh_oh">Well, crap...that\'s not supposed to happen...</string>
+
+    <string name="front_abv">F</string>
+    <string name="rear_abv">R</string>
+    <string name="connecting_ellipsis">Connecting…</string>
+
+    <string name="dialog_alter_connection">What would you like to do with this device?</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="switch_wheels">Switch Wheels</string>
+
+    <string name="dialog_replace_device">This wheel already has a device.  Do you want to replace it?</string>
+    <string name="replace">Replace</string>
+
+    <string name="dialog_save_wheel">Would you like to save the changes you\'ve made to this wheel?</string>
+    <string name="discard">Discard</string>
+
+    <string name="dialog_save_bwa">Would you like to save the changes you\'ve made to the saved Animations?</string>
+
+    <string name="dialog_deleted_BWA">Are you sure you would like you delete this animation?</string>
+    <string name="dialog_deleted_Color_">Are you sure you would like you delete this Color?</string>
+
+    <string name="leds_on">LEDs On</string>
+    <string name="leds_off">LEDs Off</string>
+
+    <string name="use_bookmark">Use Bookmark</string>
+
+    <string name="color_portion_r">R:</string>
+    <string name="color_portion_g">G:</string>
+    <string name="color_portion_b">B:</string>
+    <string name="color_portion_w">W:</string>
+    <string name="color_quality_time">Time:</string>
+    <string name="color_quality_speed">Speed:</string>
+    <string name="color_quality_b">Blend:</string>
+
+    <string name="confirm_color">Select</string>
+    <string name="confirm_color_toRGBW">Select (RGBW)</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_wheel_view">WheelViewActivity</string>
+
+    <string name="Color_Static">Static Color</string>
+    <string name="Color_dTime">Time-based Color</string>
+    <string name="Color_dSpeed">Speed-based Color</string>
+    <string-array name="color_types">
+        <item>@string/Color_Static</item>
+        <item>@string/Color_dTime</item>
+        <item>@string/Color_dSpeed</item>
+    </string-array>
+
+    <string name="Blend_Linear">Time-based Color</string>
+    <string name="Blend_Constant">Static Color</string>
+    <string-array name="blend_types">
+        <item>@string/Blend_Linear</item>
+        <item>@string/Blend_Constant</item>
+    </string-array>
+
+    <string name="Constant_Speed">Constant Speed</string>
+    <string name="Spinner_Wheel">Spinner</string>
+    <string-array name="image_meta_types">
+        <item>@string/Constant_Speed</item>
+        <item>@string/Spinner_Wheel</item>
+    </string-array>
+
+    <string name="Rotation_Rate">Rotation rate</string>
+    <string name="Inertia">Inertia</string>
+
+    <string name="Image_Mod_Select_One">[Modify Pattern…]</string>
+    <string name="Image_Mod_Slice">Slice</string>
+    <string name="Image_Mod_Single_Slice">Single Slice</string>
+    <string name="Image_Mod_Repeat_Slice">Repeat Slice</string>
+    <string name="Image_Mod_Pattern">Repeat Pattern</string>
+
+    <string-array name="image_mod_start_types">
+        <item>@string/Image_Mod_Select_One</item>
+        <item>@string/Image_Mod_Single_Slice</item>
+        <item>@string/Image_Mod_Repeat_Slice</item>
+        <item>@string/Image_Mod_Pattern</item>
+    </string-array>
+
+    <string-array name="image_mod_types">
+        <item>@string/Image_Mod_Slice</item>
+        <item>@string/Image_Mod_Pattern</item>
+    </string-array>
+
+    <string name="slice_width_text">Slice Width:</string>
+    <string name="leds_text">LEDs</string>
+    <string name="rotation_text">Rotation:</string>
+    <string name="repeat_text">Repeat</string>
+    <string name="slice_copies_text">Slice Copies:</string>
+    <string name="specify_pattern_text">Specify Pattern</string>
+
+    <plurals name="color_number_text">
+        <item quantity="one">Color %d</item>
+        <item quantity="other">Color %d</item>
+    </plurals>
+
+    <string name="spinner_assign_color">"[Assign selected…]"</string>
+
+</resources>

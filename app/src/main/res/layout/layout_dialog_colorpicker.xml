@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <to.us.suncloud.bikelights.common.colorpickerview.ColorPickerView
+        android:id="@+id/ColorPickerView"
+        android:layout_width="wrap_content"
+        android:layout_height="300dp"
+        android:layout_margin="20dp"
+        app:palette="@drawable/palette"
+        app:selector="@drawable/wheel">
+
+    </to.us.suncloud.bikelights.common.colorpickerview.ColorPickerView>
+
+    <to.us.suncloud.bikelights.common.colorpickerview.sliders.AlphaSlideBar
+        android:id="@+id/AlphaSlideBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginBottom="10dp"
+        android:visibility="gone"
+        app:selector_AlphaSlideBar="@drawable/wheel" />
+
+    <to.us.suncloud.bikelights.common.colorpickerview.sliders.BrightnessSlideBar
+        android:id="@+id/BrightnessSlideBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginBottom="10dp"
+        android:visibility="gone"
+        app:selector_BrightnessSlider="@drawable/wheel">
+
+    </to.us.suncloud.bikelights.common.colorpickerview.sliders.BrightnessSlideBar>
+
+
+    <TableLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="20dp"
+        android:visibility="visible">
+
+        <TableRow
+            android:id="@+id/table_row_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <!--<include-->
+            <!--android:id="@+id/b_11"-->
+            <!--layout="@layout/color_sample_box" />-->
+
+            <!--<include-->
+            <!--android:id="@+id/b_12"-->
+            <!--layout="@layout/color_sample_box" />-->
+
+            <!--<include-->
+            <!--android:id="@+id/b_13"-->
+            <!--layout="@layout/color_sample_box" />-->
+
+            <!--<include-->
+            <!--android:id="@+id/b_14"-->
+            <!--layout="@layout/color_sample_box" />-->
+
+            <!--<include-->
+            <!--android:id="@+id/b_15"-->
+            <!--layout="@layout/color_sample_box" />-->
+
+            <!--<include-->
+            <!--android:id="@+id/b_16"-->
+            <!--layout="@layout/color_sample_box" />-->
+
+            <!--<include-->
+            <!--android:id="@+id/b_17"-->
+            <!--layout="@layout/color_sample_box" />-->
+
+            <!--<include-->
+            <!--android:id="@+id/b_18"-->
+            <!--layout="@layout/color_sample_box" />-->
+
+        </TableRow>
+
+
+        <TableRow
+            android:id="@+id/table_row_2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!--<include layout="@layout/color_sample_box"-->
+            <!--android:id="@+id/b_21"/>-->
+
+            <!--<include layout="@layout/color_sample_box"-->
+            <!--android:id="@+id/b_22"/>-->
+
+            <!--<include layout="@layout/color_sample_box"-->
+            <!--android:id="@+id/b_23"/>-->
+
+            <!--<include layout="@layout/color_sample_box"-->
+            <!--android:id="@+id/b_24"/>-->
+
+            <!--<include layout="@layout/color_sample_box"-->
+            <!--android:id="@+id/b_25"/>-->
+
+            <!--<include layout="@layout/color_sample_box"-->
+            <!--android:id="@+id/b_26"/>-->
+
+            <!--<include layout="@layout/color_sample_box"-->
+            <!--android:id="@+id/b_27"/>-->
+
+            <!--<include layout="@layout/color_sample_box"-->
+            <!--android:id="@+id/b_28"/>-->
+
+        </TableRow>
+
+    </TableLayout>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="10dp" />
+
+</LinearLayout>

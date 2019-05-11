@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/ImageEditContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewModContainer">
+
+        <ImageView
+            android:id="@+id/image_undo"
+            android:layout_width="100dp"
+            android:layout_height="@dimen/undo_redo_size"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/image_redo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageModSpinner"
+            app:srcCompat="@drawable/undo" />
+
+        <ImageView
+            android:id="@+id/image_redo"
+            android:layout_width="100dp"
+            android:layout_height="@dimen/undo_redo_size"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/image_undo"
+            app:layout_constraintTop_toBottomOf="@+id/imageModSpinner"
+            app:srcCompat="@drawable/redo" />
+
+        <to.us.suncloud.bikelights.common.WheelView.SpinnerSelectListener
+            android:id="@+id/imageModSpinner"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/imageViewModContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/imageTypeContainer"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/wheelView"
+            app:layout_constraintTop_toTopOf="parent">
+
+
+            <android.support.constraint.ConstraintLayout
+                android:id="@+id/constrot_container"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/attribute_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="22dp"
+                    android:text="Rotation Speed"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <SeekBar
+                    android:id="@+id/attribute_seekbar"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:max="@integer/double_max_speed"
+                    android:progress="0"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/attribute_text" />
+
+                <ImageView
+                    android:id="@+id/attribute_right"
+                    android:layout_width="@dimen/image_icon_width"
+                    android:layout_height="@dimen/image_icon_height"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:clickable="true"
+                    android:elevation="2dp"
+                    android:src="@drawable/right_arrow"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/attribute_seekbar" />
+
+                <ImageView
+                    android:id="@+id/attribute_left"
+                    android:layout_width="@dimen/image_icon_width"
+                    android:layout_height="@dimen/image_icon_height"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:clickable="true"
+                    android:elevation="2dp"
+                    android:src="@drawable/left_arrow"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/attribute_seekbar" />
+
+                <TextView
+                    android:id="@+id/attribute_val"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="0"
+                    android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                    app:layout_constraintEnd_toStartOf="@+id/attribute_right"
+                    app:layout_constraintStart_toEndOf="@+id/attribute_left"
+                    app:layout_constraintTop_toBottomOf="@+id/attribute_seekbar" />
+            </android.support.constraint.ConstraintLayout>
+
+        </android.support.constraint.ConstraintLayout>
+
+        <ImageView
+            android:id="@+id/wheelView"
+            android:layout_width="@dimen/wheel_view_height"
+            android:layout_height="@dimen/wheel_view_height"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:src="@android:color/transparent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/imageTypeContainer"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </android.support.constraint.ConstraintLayout>
+</android.support.constraint.ConstraintLayout>

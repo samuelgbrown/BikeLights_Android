@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="#e0e0e0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/ColorObj_Preview"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/color_view_dim"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="@color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <to.us.suncloud.bikelights.common.Color.ColorPortionEditText
+            android:id="@+id/colorObj_W"
+            android:layout_width="@dimen/color_view_dim"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:backgroundTint="@color/white"
+            android:ems="10"
+            android:hint="White Portion"
+            android:imeOptions="actionDone"
+            android:inputType="number"
+            android:singleLine="true"
+            android:text="255"
+            android:textAlignment="center"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/colorObj_B"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.498" />
+
+        <to.us.suncloud.bikelights.common.Color.ColorPortionEditText
+            android:id="@+id/colorObj_B"
+            android:layout_width="@dimen/color_view_dim"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="@color/blue"
+            android:ems="10"
+            android:hint="Blue Portion"
+            android:imeOptions="actionDone"
+            android:inputType="number"
+            android:singleLine="true"
+            android:text="255"
+            android:textAlignment="center"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/colorObj_G"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.498" />
+
+        <to.us.suncloud.bikelights.common.Color.ColorPortionEditText
+            android:id="@+id/colorObj_G"
+            android:layout_width="@dimen/color_view_dim"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="@color/green"
+            android:ems="10"
+            android:hint="Green Portion"
+            android:imeOptions="actionDone"
+            android:inputType="number"
+            android:singleLine="true"
+            android:text="255"
+            android:textAlignment="center"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/colorObj_R"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.498" />
+
+        <to.us.suncloud.bikelights.common.Color.ColorPortionEditText
+            android:id="@+id/colorObj_R"
+            android:layout_width="@dimen/color_view_dim"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="@color/red"
+            android:ems="10"
+            android:hint="Red Portion"
+            android:inputType="number"
+            android:scrollbarAlwaysDrawHorizontalTrack="true"
+            android:singleLine="true"
+            android:text="255"
+            android:textAlignment="center"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/ColorObj_Preview"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.498"
+            android:imeOptions="actionDone" />
+
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.constraint.ConstraintLayout>
