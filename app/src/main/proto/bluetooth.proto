@@ -6,35 +6,51 @@ option java_package = "to.us.suncloud";
 option java_outer_classname = "BluetoothProto";
 
 message Bluetooth {
-    MessageType type = 1;
-
+    MessageType type = 1; // What type of information are we referring to?
+    bool request = 2; // Are we requesting information, or sending it?
+    oneof contents {
+        BikeWheelAnim bike_wheel_anim = 3; // A Bike_Wheel_Animation
+        Kalman kalman = 4; // Information on the Kalman filter
+        float brightness_scale = 5; // Scaling the brightness on the wheel (faster than re-sending the entire BWA)
+        Storage storage = 6; // The amount of free memory on the Arduino
+        uint32 battery = 7; // The amount of battery left on the Arduino
+    }
 
     enum MessageType {
         BIKE_WHEEL_ANIM = 0;
         KALMAN = 1;
-        STORAGE = 2;
-        BATTERY = 3;
+        BRIGHTNESS = 2;
+        STORAGE = 3;
+        BATTERY = 4;
     }
 
     message BikeWheelAnim {
+        uint32 num_leds = 1; // Number of LEDs on the wheel (shouldn't change, but just to keep everything in order)
+        repeated Color_ palette = 2; // The Color_'s that we're working with to define our pattern
+        repeated uint32 image_main = 3; // The pattern of the main image (while the wheel is moving)
+        repeated uint32 image_idle = 4; // The pattern of the idle image (while the wheel is not moving, and using a Pattern that supports Idle)
+        ImageMeta image_meta = 5; // The meta information about the BWA
 
         message Color_ {
-            repeated ColorObj color_objs = 1;
-            ColorType type = 2;
+            repeated ColorObj color_objs = 1; // The RGBW values that define the Color_ (1 colorObj for a Static Color_, 1 or more for a dynamic Color_)
+            ColorType type = 2; // The type of Color_ we are using (static, time dependant, velocity dependant...?)
 
             enum ColorType {
                 STATIC = 0;
                 D_TIME = 1;
                 D_VEL = 2;
             }
+
             message ColorObj {
+                // The RGBW values in this colorObj
                 uint32 r = 1;
                 uint32 g = 2;
                 uint32 b = 3;
                 uint32 w = 4;
 
-                uint32 t = 5;
-                BlendType bt = 6;
+                // Used only for dynamic colors
+                uint32 t = 5; // The T value (speed, velocity, ...) at which this colorObj is used
+                BlendType bt = 6; // The type of blending between this color and those before/after it (no blending [constant], linear blending, ...)
 
                 enum BlendType {
                     CONSTANT = 0;
@@ -42,5 +58,36 @@ message Bluetooth {
                 }
             }
         }
+
+        message ImageMeta {
+            ImageType type = 1; // The type of pattern this is (is the image moving at a constant rate, is it like a spinner wheel...?)
+            ImageMetaParameter parameter_set = 2; // Parameters needed to use this Image pattern
+
+            enum ImageType {
+                CONST_ROT = 0; // A pattern that is rotating at a constant speed
+                SPINNER = 1; // A pattern that behaves like a "spinner" hubcap
+            }
+
+
+            message ImageMetaParameter {
+                // Parameterization of the ImageMeta (using a full message so that it can be expanded later with more complex patterns, if desired)
+                uint32 p1 = 1; // The first, main parameter needed for the Image pattern (rotation speed, inertia, ...)
+            }
+        }
+    }
+
+    message Kalman {
+        uint32 n_obs = 1; // Number of observed variables
+        uint32 n_sta = 2; // Number of state variables
+
+        // Kalman parameters (defined using standard from Wikipedia's Kalman Filter page)
+        float q = 3; // Q
+        repeated float r = 4; // R
+        repeated float p0 = 5; // Initial P
+    }
+
+    message Storage {
+        uint32 remaining = 1; // Amount of storage remaining on the Arduino
+        uint32 total = 2; // Amount of storage available to the Arduino in total
     }
 }
