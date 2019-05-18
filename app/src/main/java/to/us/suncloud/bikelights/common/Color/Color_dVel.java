@@ -1,6 +1,7 @@
 package to.us.suncloud.bikelights.common.Color;
 
 import to.us.suncloud.bikelights.common.Constants;
+import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
 
 public class Color_dVel extends Color_d {
     public Color_dVel() {
@@ -32,8 +33,11 @@ public class Color_dVel extends Color_d {
         return 100; // One unit of T for the Color_dVel represents an LED/sec, which can be represented 1:100 in animation time
     }
 
-//    @Override
-//    int getIncrementT() {
-//        return 10; // Add 10 units to each new colorObjMeta
-//    }
+    @Override
+    public BikeWheelAnim.Color_ getColorBuf() {
+        return BikeWheelAnim.Color_.newBuilder()
+                .addAllColorObjs(getAllColorObjBufs())
+                .setType(BikeWheelAnim.Color_.ColorType.D_VEL)
+                .build();
+    }
 }

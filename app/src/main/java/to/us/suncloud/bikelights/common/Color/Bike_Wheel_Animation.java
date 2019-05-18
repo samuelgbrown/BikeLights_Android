@@ -1,7 +1,6 @@
 package to.us.suncloud.bikelights.common.Color;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -9,6 +8,7 @@ import to.us.suncloud.bikelights.common.Constants;
 import to.us.suncloud.bikelights.common.Image.ImageMeta_;
 import to.us.suncloud.bikelights.common.Image.Image_Meta_ConstRot;
 import to.us.suncloud.bikelights.common.Image.Image_Meta_Spinner;
+import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
 
 public class Bike_Wheel_Animation implements Serializable {
     // Main data
@@ -254,5 +254,39 @@ public class Bike_Wheel_Animation implements Serializable {
         } else {
             return false;
         }
+    }
+
+    private ArrayList<BikeWheelAnim.Color_> getPaletteBuf() {
+        ArrayList<BikeWheelAnim.Color_> paletteBuf = new ArrayList<>();
+        for (int colorInd = 0; colorInd < numColors(); colorInd++) {
+            paletteBuf.add(mPalette.get(colorInd).getColorBuf());
+        }
+
+        return paletteBuf;
+    }
+
+    public BikeWheelAnim toProtoBuf() {
+        BikeWheelAnim.Builder BWAProto = BikeWheelAnim.newBuilder()
+                // Add number of LEDs
+                .setNumLeds(mImageMain.size())
+
+                // Add the palette
+                .addAllPalette(getPaletteBuf())
+
+                // Add the main Image
+                .addAllImageMain(mImageMain)
+
+                // Add ImageMeta
+                .setImageMeta(BikeWheelAnim.ImageMeta.newBuilder()
+                        .setType(mImageMeta.getImageTypeBuf())
+                        .setParameterSet(mImageMeta.getImageParameterBuf())
+                );
+
+        // If there is an idle image, add that too
+        if (mImageMeta.supportsIdle()) {
+            BWAProto.addAllImageIdle(mImageIdle);
+        }
+
+        return BWAProto.build();
     }
 }

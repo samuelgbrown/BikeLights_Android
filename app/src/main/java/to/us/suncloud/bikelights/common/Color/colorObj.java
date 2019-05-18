@@ -4,6 +4,8 @@ import android.graphics.Color;
 
 import java.io.Serializable;
 
+import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
+
 public class colorObj implements Serializable {
     private static final float MAX_VAL = 255;
     private static final float MAX_WHITE_RATIO = .8f; // The maximum ratio between a current color and the maximum value a color can be (MAX_VAL) that the white value can increase the color to (i.e. a [0 0 0 255] will be increased to [128 128 128 0] if this value is .5)
@@ -88,6 +90,15 @@ public class colorObj implements Serializable {
 
     private int getRGBColorInt() {
         return Color.rgb(getR(), getG(), getB());
+    }
+
+    public BikeWheelAnim.Color_.ColorObj getColorObjBuf() {
+        return BikeWheelAnim.Color_.ColorObj.newBuilder()
+                .setR(getR())
+                .setG(getG())
+                .setB(getB())
+                .setW(getW())
+                .build();
     }
 
     private colorObj getRGBEquivalent() {

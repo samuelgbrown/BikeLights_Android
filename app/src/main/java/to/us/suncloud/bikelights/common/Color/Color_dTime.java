@@ -1,6 +1,7 @@
 package to.us.suncloud.bikelights.common.Color;
 
 import to.us.suncloud.bikelights.common.Constants;
+import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
 
 public class Color_dTime extends Color_d {
     public Color_dTime() {
@@ -30,6 +31,14 @@ public class Color_dTime extends Color_d {
     @Override
     int getTScale() {
         return 1; // One unit of T for the Color_dTime represents a millisecond, which can be represented 1:1 in animation time
+    }
+
+    @Override
+    public BikeWheelAnim.Color_ getColorBuf() {
+        return BikeWheelAnim.Color_.newBuilder()
+                .addAllColorObjs(getAllColorObjBufs())
+                .setType(BikeWheelAnim.Color_.ColorType.D_TIME)
+                .build();
     }
 
     @Override

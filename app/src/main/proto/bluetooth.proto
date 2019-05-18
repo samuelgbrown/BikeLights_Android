@@ -2,10 +2,10 @@ syntax = "proto3";
 
 package bluetooth;
 
-option java_package = "to.us.suncloud";
+option java_package = "to.us.suncloud.bluetoothproto";
 option java_outer_classname = "BluetoothProto";
 
-message Bluetooth {
+message BluetoothMessage {
     MessageType type = 1; // What type of information are we referring to?
     bool request = 2; // Are we requesting information, or sending it?
     oneof contents {

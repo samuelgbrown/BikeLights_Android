@@ -1,9 +1,11 @@
 package to.us.suncloud.bikelights.common.Image;
 
 import to.us.suncloud.bikelights.common.Constants;
+import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim.ImageMeta.ImageType;
+import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim.ImageMeta.ImageMetaParameter;
 
 public class Image_Meta_Spinner extends ImageMeta_ {
-    private int inertia = 1;
+    private int inertia;
 
     @Override
     public boolean supportsIdle() {
@@ -44,6 +46,18 @@ public class Image_Meta_Spinner extends ImageMeta_ {
     @Override
     public int getImageType() {
         return Constants.IMAGE_SPINNER;
+    }
+
+    @Override
+    public ImageType getImageTypeBuf() {
+        return ImageType.SPINNER;
+    }
+
+    @Override
+    public ImageMetaParameter getImageParameterBuf() {
+        return ImageMetaParameter.newBuilder()
+                .setP1(getInertia())
+                .build();
     }
 
     @Override

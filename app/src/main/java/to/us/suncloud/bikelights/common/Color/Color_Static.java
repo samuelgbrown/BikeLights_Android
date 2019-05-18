@@ -4,6 +4,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 
 import to.us.suncloud.bikelights.common.Constants;
+import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
 
 public class Color_Static extends Color_ {
     private colorObj c = new colorObj();
@@ -69,6 +70,14 @@ public class Color_Static extends Color_ {
     @Override
     public Color_ clone() {
         return new Color_Static(this);
+    }
+
+    @Override
+    public BikeWheelAnim.Color_ getColorBuf() {
+        return BikeWheelAnim.Color_.newBuilder()
+                .addColorObjs(c.getColorObjBuf())
+                .setType(BikeWheelAnim.Color_.ColorType.STATIC)
+                .build();
     }
 
     @Override
