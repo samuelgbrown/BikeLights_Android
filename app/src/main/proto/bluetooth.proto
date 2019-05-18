@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package bluetooth;
+
+option java_package = "to.us.suncloud";
+option java_outer_classname = "BluetoothProto";
+
+message Bluetooth {
+    MessageType type = 1;
+
+
+    enum MessageType {
+        BIKE_WHEEL_ANIM = 0;
+        KALMAN = 1;
+        STORAGE = 2;
+        BATTERY = 3;
+    }
+
+    message BikeWheelAnim {
+
+        message Color_ {
+            repeated ColorObj color_objs = 1;
+            ColorType type = 2;
+
+            enum ColorType {
+                STATIC = 0;
+                D_TIME = 1;
+                D_VEL = 2;
+            }
+            message ColorObj {
+                uint32 r = 1;
+                uint32 g = 2;
+                uint32 b = 3;
+                uint32 w = 4;
+
+                uint32 t = 5;
+                BlendType bt = 6;
+
+                enum BlendType {
+                    CONSTANT = 0;
+                    LINEAR = 1;
+                }
+            }
+        }
+    }
+}
