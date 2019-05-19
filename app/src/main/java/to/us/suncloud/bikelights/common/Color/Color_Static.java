@@ -12,6 +12,10 @@ public class Color_Static extends Color_ {
     public Color_Static() {
     }
 
+    public Color_Static(colorObj newC) {
+        setColorObj(newC);
+    }
+
     public Color_Static(Color_Static otherColor) {
         setColorObj(otherColor.getColorObj());
     }

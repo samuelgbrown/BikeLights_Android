@@ -3,6 +3,8 @@ package to.us.suncloud.bikelights.common.Color;
 import android.graphics.Color;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
 
@@ -99,6 +101,21 @@ public class colorObj implements Serializable {
                 .setB(getB())
                 .setW(getW())
                 .build();
+    }
+
+    static public colorObj fromProtoBuf(BikeWheelAnim.Color_.ColorObj messageCO) {
+        int[] RGBW = {messageCO.getR(), messageCO.getG(), messageCO.getB(), messageCO.getW()};
+        return new colorObj(RGBW);
+    }
+
+    static public ArrayList<colorObj> fromProtoBuf(List<BikeWheelAnim.Color_.ColorObj> messageCOArray) {
+        ArrayList<colorObj> colorObjArrayOut = new ArrayList<>();
+
+        for (int colorInd = 0; colorInd < messageCOArray.size(); colorInd++) {
+            colorObjArrayOut.add(fromProtoBuf(messageCOArray.get(colorInd)));
+        }
+
+        return colorObjArrayOut;
     }
 
     private colorObj getRGBEquivalent() {

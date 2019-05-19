@@ -19,21 +19,25 @@ import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAn
 public abstract class Color_d extends Color_ {
     //    abstract int getIncrementT(); // Amount to increment t for each new colorObjMeta
     private int nextID = 0;
-    private List<colorObjMeta> c = new ArrayList<>(Collections.nCopies(1, new colorObjMeta())); // Initialize the Color_d with one colorObj
+    private List<colorObjMeta> c = new ArrayList<>(Collections.nCopies(1, new colorObjMeta(getNewID()))); // Initialize the Color_d with one colorObj
 
     public enum BLEND_TYPE {
         CONSTANT,
         LINEAR
     }
 
-    public class colorObjMeta implements Serializable {
-        private int ID; // A unique identifying number (useful for when colorObj's getP their orders changed around in arrays).
+    static public class colorObjMeta implements Serializable {
+        private int ID; // A unique identifying number (useful for when colorObj's get their orders changed around in arrays).
         private colorObj c = new colorObj();
         private int t = 0;
         private BLEND_TYPE b = BLEND_TYPE.LINEAR;
 
-        colorObjMeta() {
-            ID = getNewID();
+//        colorObjMeta() {
+//            ID = getNewID();
+//        }
+
+        colorObjMeta(int newID) {
+            ID = newID;
         }
 
         colorObjMeta(colorObjMeta otherC) {
@@ -115,6 +119,33 @@ public abstract class Color_d extends Color_ {
             // Build it and return
             return COBuilder.build();
         }
+    }
+
+    static public colorObjMeta fromProtoBufColorObjMeta(BikeWheelAnim.Color_.ColorObj messageCO, int thisID) {
+        colorObjMeta colorObjMetaOut = new colorObjMeta(thisID);
+        colorObjMetaOut.setColorObj(colorObj.fromProtoBuf(messageCO));
+        colorObjMetaOut.setT(messageCO.getT());
+
+        switch (messageCO.getBt()) {
+            case CONSTANT:
+                colorObjMetaOut.setB(BLEND_TYPE.CONSTANT);
+                break;
+            case LINEAR:
+                colorObjMetaOut.setB(BLEND_TYPE.LINEAR);
+                break;
+        }
+
+        return colorObjMetaOut;
+    }
+
+    static public List<colorObjMeta> fromProtoBufColorObjMeta(List<BikeWheelAnim.Color_.ColorObj> messageCOArray) {
+        List<colorObjMeta> colorObjMetaArrayOut = new ArrayList<>();
+
+        for (int colorInd = 0;colorInd < messageCOArray.size();colorInd++) {
+            colorObjMetaArrayOut.add(fromProtoBufColorObjMeta(messageCOArray.get(colorInd), colorInd));
+        }
+
+        return colorObjMetaArrayOut;
     }
 
     private class SortByT implements Comparator<colorObjMeta> {
@@ -311,7 +342,7 @@ public abstract class Color_d extends Color_ {
         // Ensure that there exists a t == 0 object
         if (c.get(0).getT() != 0) {
             // If the first object is not t == 0, then add a new t == 0 object to the beginning of c (doesn't need error-checking)
-            c.add(0, new colorObjMeta());
+            c.add(0, new colorObjMeta(getNewID()));
         }
 
         return listChanged;
@@ -342,11 +373,11 @@ public abstract class Color_d extends Color_ {
 
     public void addNewColorObj() {
         // First, create a new colorObjMeta object
-        addNewColorObj(new colorObjMeta());
+        addNewColorObj(new colorObjMeta(getNewID()));
     }
 
     public void addNewColorObj(colorObjMeta oldC) {
-        colorObjMeta newC = new colorObjMeta(); // Create a new colorObjMeta, so that a new ID is generated
+        colorObjMeta newC = new colorObjMeta(getNewID()); // Create a new colorObjMeta, so that a new ID is generated
 
         // Save the color and the blend time
         newC.setColorObj(oldC.getColorObj());

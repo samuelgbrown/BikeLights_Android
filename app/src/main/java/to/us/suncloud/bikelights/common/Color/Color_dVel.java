@@ -1,5 +1,7 @@
 package to.us.suncloud.bikelights.common.Color;
 
+import java.util.List;
+
 import to.us.suncloud.bikelights.common.Constants;
 import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
 
@@ -11,6 +13,10 @@ public class Color_dVel extends Color_d {
     public Color_dVel(Color_dVel otherColor) {
         setC(otherColor.getC());
         setNextID(otherColor.getNextID());
+    }
+
+    public Color_dVel(List<colorObjMeta> colorObjList) {
+        setC(colorObjList);
     }
 
     @Override
@@ -41,3 +47,4 @@ public class Color_dVel extends Color_d {
                 .build();
     }
 }
+

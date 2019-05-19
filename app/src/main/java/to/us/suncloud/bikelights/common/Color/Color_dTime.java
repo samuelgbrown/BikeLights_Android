@@ -1,5 +1,7 @@
 package to.us.suncloud.bikelights.common.Color;
 
+import java.util.List;
+
 import to.us.suncloud.bikelights.common.Constants;
 import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
 
@@ -11,6 +13,10 @@ public class Color_dTime extends Color_d {
     public Color_dTime(Color_dTime otherColor) {
         setC(otherColor.getC());
         setNextID(otherColor.getNextID());
+    }
+
+    public Color_dTime(List<colorObjMeta> colorObjList) {
+        setC(colorObjList);
     }
 
     @Override

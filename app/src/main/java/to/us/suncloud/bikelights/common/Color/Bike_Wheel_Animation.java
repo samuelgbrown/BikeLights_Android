@@ -289,4 +289,22 @@ public class Bike_Wheel_Animation implements Serializable {
 
         return BWAProto.build();
     }
+
+    static public Bike_Wheel_Animation fromProtoBuf(BikeWheelAnim messageBWA) {
+        // Extract all of the information from the message
+        ArrayList<Color_> palette = Color_.fromProtoBufColor_(messageBWA.getPaletteList()); // Get the palette from the message
+        ArrayList<Integer> imageMain = new ArrayList<>(messageBWA.getImageMainList()); // Get the main image
+        ImageMeta_ imageMeta = ImageMeta_.fromProtoBuf(messageBWA.getImageMeta()); // Get the image meta
+
+        ArrayList<Integer> imageIdle;
+        if (imageMeta.supportsIdle()) {
+            imageIdle = new ArrayList<>(messageBWA.getImageIdleList()); // If this pattern supports an idle animation, get it from the message
+        } else {
+            // If there is no idle supported for this pattern, then image idle should be null
+            imageIdle = null;
+        }
+
+        // Compile the new information into a new BWA object, and return it
+        return new Bike_Wheel_Animation(palette, imageMain, imageIdle, imageMeta);
+    }
 }
