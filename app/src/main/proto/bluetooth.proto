@@ -91,3 +91,8 @@ message BluetoothMessage {
         uint32 total = 2; // Amount of storage available to the Arduino in total
     }
 }
+
+// Will be sent before BluetoothMessage to let Arduino know how much space to set aside for the incoming content
+message BluetoothLength {
+    fixed32 message_length = 1; // The length of the next message (contains the result of BluetoothMessage.getSerializedSize() )
+}

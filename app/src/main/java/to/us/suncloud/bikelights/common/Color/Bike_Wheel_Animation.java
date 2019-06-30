@@ -287,6 +287,9 @@ public class Bike_Wheel_Animation implements Serializable {
             BWAProto.addAllImageIdle(mImageIdle);
         }
 
+//        BikeWheelAnim bwa_message = BWAProto.build();
+//        bwa_message.getSerializedSize();
+
         return BWAProto.build();
     }
 
