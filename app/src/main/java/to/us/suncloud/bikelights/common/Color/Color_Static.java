@@ -3,8 +3,13 @@ package to.us.suncloud.bikelights.common.Color;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import to.us.suncloud.bikelights.common.Bluetooth.BluetoothByteList;
+import to.us.suncloud.bikelights.common.ByteMath;
 import to.us.suncloud.bikelights.common.Constants;
-import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
+//import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
 
 public class Color_Static extends Color_ {
     private colorObj c = new colorObj();
@@ -77,14 +82,6 @@ public class Color_Static extends Color_ {
     }
 
     @Override
-    public BikeWheelAnim.Color_ getColorBuf() {
-        return BikeWheelAnim.Color_.newBuilder()
-                .addColorObjs(c.getColorObjBuf())
-                .setType(BikeWheelAnim.Color_.ColorType.STATIC)
-                .build();
-    }
-
-    @Override
     public boolean equals(Object o) {
         boolean isEqual = false;
         if (o instanceof Color_Static) {
@@ -93,4 +90,22 @@ public class Color_Static extends Color_ {
 
         return isEqual;
     }
+
+    @Override
+    public List<Byte> toByteList() {
+        List<Byte> newByteList = new ArrayList<Byte>(5); // Preallocate room for 5 bytes (one for Color_ type, and 4 for the static color
+        newByteList.add((byte) 0x00); // An all zeros header byte indicates a Static Color_
+        newByteList.addAll(c.toByteList());
+
+        return newByteList;
+    }
+
+    //    @Override
+//    public BikeWheelAnim.Color_ getColorBuf() {
+//        return BikeWheelAnim.Color_.newBuilder()
+//                .addColorObjs(c.getColorObjBuf())
+//                .setType(BikeWheelAnim.Color_.ColorType.STATIC)
+//                .build();
+//    }
+
 }

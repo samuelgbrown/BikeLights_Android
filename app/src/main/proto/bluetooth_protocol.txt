@@ -1,0 +1,124 @@
+This file is scratch-space for designing the byte-code that will represent the information transfered between Arduino and Android.
+Every bit will be represented as a one- or two-character symbol.  A byte that represents a single piece of information when interpretted together will be represented as a one- or two- character symbol preceded by "b_"
+
+The message will be encoded per-byte.  The following is a breakdown per byte of the information encoded.
+If any message being sent from Android to Arduino does not fit in 64 bytes, then it will be broken into as many 62-byte messages (n <= 2^4) as required to fit it.  The first two bytes will be filled in according to the pattern below, otherwise subsequent messages will pick up where the last left off.
+
+Maximum values enforced by this standard:
+Message size (Android to Arduino):  64B (dependant on Serial buffer size of Arduino)
+Message size (Arduino to Android):  Unlimited
+Number of messages:                 15 (TT, S)
+Number of LEDs:                     255 (N)
+Size of palette:                    255 (PC)
+Number of colorObj_meta:            255 (NC)
+
+The right-most bit the lowest significance (as if it were written out by hand), should be little endian (?)
+e.g. 1 = [0 0 0 0 0 0 0 1]
+
+# # # # # # # # # # # # # # # # # # # # # # # # #
+- R C1 C2 C3 X X X X | [TT1 TT2 TT3 TT4 S1 S2 S3 S4] | []-
+R (bool) - 1 if the message is requesting an update from the system regarding information about the content implied by C (S) will be disregarded).  0 if the message contains information
+C (3uint) - A numerical representation of the type of information contained in this message, when interpretted as an unsigned integer
+    0 - Bike Wheel Animation
+    1 - Kalman information
+    2 - Brightness scale value
+    3 - Storage information
+    4 - Battery information
+X - Unused
+If the message is being sent from Android to Arduino, then the second byte will be sent
+TT (4uint) - The number of 4-byte messages required to convey this information
+S (4uint) - The number of this message in the sequence up to T messages
+
+
+From here, the content of the remainder of the message depends on the type of message:
+# # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # #
+C == 0 : Bike Wheel Animation
+- N1 N2 N3 N4 N5 N6 N7 N8 | PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 -
+N (8uint) - The number of LEDs on the bike wheel that are being considered
+PC (8uint) - The size of the Color_ object palette
+
+Each Color_ object will be encoded in the following way:
+- CT1 CT2 CT3 CT4 X X X X | [] -
+CT (4uint) - Color_ type
+    0 - Static Color_
+    1 - Time-based Color_
+    2 - Velocity-based Color_
+
+    # # # # # # # # # # # # # # # # # # # # # # #
+    CT == 0: Static Color_
+    The next bytes will be only the RGBW representations of the color
+    - b_R | b_G | b_B | b_W -
+    R, B, G, W (8uint) - The brightness of the indicated LED for this color
+
+    # # # # # # # # # # # # # # # # # #4 # # # # #
+    CT == 1: Time-based Color_ AND Velocity-based Color_
+    - b_NC -
+    NC (8uint) - The number of colorObj_meta's that will be encoded in the following bytes
+
+    Each colorObj_meta will be represented by the following bytes:
+    - b_R | b_G | b_B | b_W | b_B | b_T1 b_T2 b_T3 b_T4 - 
+    R, B, G, W (8uint) - The brightness of the indicated LED for this color
+    B (8uint) - The blend-type that this colorObj_meta uses
+        0 - Constant
+        1 - Linear
+    T (4ulong for time-based/4float for vel-based) - The T value of this colorObj_meta, represented as 4-bytes to be interpreted according to the type of Color_ that holds this colorObj
+    # # # # # # # # # # # # # # # # # # # # # # #
+
+The Image information will be encoded in the following way:
+- X X X SI ITM1 ITM2 ITM3 ITM4 | b_IPM | (N/2) x b_IM | [b_ITI | b_IPI | (N/2) x b_II] -
+SI (bool) - Does the image support an idle image? 1 if yes, 0 if no
+ITM (4uint) - The Image Type for the main image.
+    0 - Wheel_rel_rot (constant rotation, relative to the wheel)
+    1 - Ground_rel_rot (constant rotation, relative to the ground)
+    2 - Spinner (rotation behaves like a spinner hub-cap)
+IPM (8sint) - The parameter set for the main Image, dependant on IT
+    0 - The rotation rate
+    1 - The rotation rate
+    2 - The inertia
+IM (byte) - The image values for the main image.  Each half byte (nibble) represents the index in the palette that this LED is colored.  There are N/2 bytes in this portion
+
+IF SI == 1, the bytes in the bracket will be used.  Otherwise, they are excluded.
+ITI (8uint) - The Image Type for the idle image
+    0 - Wheel_rel_rot (constant rotation, relative to the wheel)
+IPM (8sint) - The parameter set for the main Image, dependant on IT
+    0 - The rotation rate
+II (byte) - The image values for the idle image.  Each half byte (nibble) represents the index in the palette that this LED is colored.  There are N/2 bytes in this portion
+
+# # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # #
+C == 1 : Kalman
+- NO1 NO2 NO3 NO4 ST1 ST2 ST3 ST4 | b_Q1 b_Q2 b_Q3 b_Q4 | [NO*NO x b_R1 b_R2 b_R3 b_R4] | [ST*ST x b_P1 b_P2 b_P3 b_P4] -
+NO (4uint) - Number of observation variables (2 - position, velocity)
+ST (4uint) - Number of state variables (3 - position, velocity, acceleration)
+Q (4float) - Q, as a scalar
+R (4float[]) - NO x NO matrix, intepretted as columns first, then rows
+P (4float[]) - ST x ST matrix, intepretted as columns first, then rows
+
+# # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # #
+C == 2 : Brightness scale
+- b_BF1 b_BF2 b_BF3 b_BF4 -
+BF (4float) - Brightness factor, less than or equal to 1, and greater than 0.
+
+# # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # #
+C == 3 : Storage
+- b_RE1 b_RE2 b_RE3 b_RE4 | b_TO1 b_TO2 b_TO3 b_TO4 -
+RE (4ulong) - The amount of remaining RAM
+TO (4ulong) - The amoutn of total RAM
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # #
+C == 4 : Battery
+- b_BA -
+BA (8uint) - The amount of battery remaining, out of 255.
+
+# # # # # # # # # # # # # # # # # # # # # # # # #

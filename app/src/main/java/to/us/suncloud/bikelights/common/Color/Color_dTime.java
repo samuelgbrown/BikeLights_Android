@@ -2,6 +2,7 @@ package to.us.suncloud.bikelights.common.Color;
 
 import java.util.List;
 
+import to.us.suncloud.bikelights.common.ByteMath;
 import to.us.suncloud.bikelights.common.Constants;
 import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
 
@@ -39,13 +40,25 @@ public class Color_dTime extends Color_d {
         return 1; // One unit of T for the Color_dTime represents a millisecond, which can be represented 1:1 in animation time
     }
 
+    // New byte level manipulation functions
     @Override
-    public BikeWheelAnim.Color_ getColorBuf() {
-        return BikeWheelAnim.Color_.newBuilder()
-                .addAllColorObjs(getAllColorObjBufs())
-                .setType(BikeWheelAnim.Color_.ColorType.D_TIME)
-                .build();
+    byte getColor_Header() {
+        return 0x01;
     }
+
+    @Override
+    List<Byte> getTByteCode(int i) {
+        return ByteMath.putIntToByteArray(getColorObjMeta(i).getT());
+    }
+
+    // Old Protocol Buffer functions
+//    @Override
+//    public BikeWheelAnim.Color_ getColorBuf() {
+//        return BikeWheelAnim.Color_.newBuilder()
+//                .addAllColorObjs(getAllColorObjBufs())
+//                .setType(BikeWheelAnim.Color_.ColorType.D_TIME)
+//                .build();
+//    }
 
     @Override
     public boolean equals(Object o) {

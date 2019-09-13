@@ -1,8 +1,8 @@
 package to.us.suncloud.bikelights.common.Image;
 
 import to.us.suncloud.bikelights.common.Constants;
-import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim.ImageMeta.ImageType;
-import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim.ImageMeta.ImageMetaParameter;
+//import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim.ImageMeta.ImageType;
+//import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim.ImageMeta.ImageMetaParameter;
 
 public class Image_Meta_Spinner extends ImageMeta_ {
     private int inertia;
@@ -49,16 +49,21 @@ public class Image_Meta_Spinner extends ImageMeta_ {
     }
 
     @Override
-    public ImageType getImageTypeBuf() {
-        return ImageType.SPINNER;
+    public byte getImageTypeByte() {
+        return 0x02;
     }
 
-    @Override
-    public ImageMetaParameter getImageParameterBuf() {
-        return ImageMetaParameter.newBuilder()
-                .setP1(getInertia())
-                .build();
-    }
+    //    @Override
+//    public ImageType getImageTypeBuf() {
+//        return ImageType.SPINNER;
+//    }
+//
+//    @Override
+//    public ImageMetaParameter getImageParameterBuf() {
+//        return ImageMetaParameter.newBuilder()
+//                .setP1(getInertia())
+//                .build();
+//    }
 
     @Override
     public boolean equals(Object obj) {

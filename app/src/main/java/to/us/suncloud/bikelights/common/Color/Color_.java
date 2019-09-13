@@ -6,7 +6,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
+import to.us.suncloud.bikelights.common.Bluetooth.BluetoothByteList;
+
+//import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;toProto
 
 public abstract class Color_ implements Serializable {
     private String name = "";
@@ -23,7 +25,7 @@ public abstract class Color_ implements Serializable {
 
     public abstract int getColorType();
 
-    public abstract BikeWheelAnim.Color_ getColorBuf();
+//    public abstract BikeWheelAnim.Color_ getColorBuf();
 
     public abstract int getNumColors();
 
@@ -38,36 +40,40 @@ public abstract class Color_ implements Serializable {
 
     public abstract boolean equals(Object o); // Children must implement equality function
 
-    static public Color_ fromProtoBufColor_(BikeWheelAnim.Color_ messageColor_) {
-        BikeWheelAnim.Color_.ColorType type = messageColor_.getType();
+    // New byte-level manipulation code
+    public abstract List<Byte> toByteList(); // Create a byte-list from this Color_
 
-        // Depending on what type of Color_ is stored, create a different Color_ object
-        Color_ newColor;
-        switch (type) {
-            case STATIC:
-                newColor = new Color_Static(colorObj.fromProtoBuf(messageColor_.getColorObjs(0)));
-                break;
-            case D_TIME:
-                newColor = new Color_dTime(Color_d.fromProtoBufColorObjMeta(messageColor_.getColorObjsList()));
-                break;
-            case D_VEL:
-                newColor = new Color_dVel(Color_d.fromProtoBufColorObjMeta(messageColor_.getColorObjsList()));
-                break;
-            default:
-                newColor = new Color_Static(colorObj.fromProtoBuf(messageColor_.getColorObjs(0)));
-                break;
-        }
-
-        return newColor;
-    }
-
-    static public ArrayList<Color_> fromProtoBufColor_(List<BikeWheelAnim.Color_> messageColor_Array) {
-        ArrayList<Color_> color_ArrayOut = new ArrayList<>();
-
-        for (int colorInd = 0; colorInd < messageColor_Array.size(); colorInd++) {
-            color_ArrayOut.add(Color_.fromProtoBufColor_(messageColor_Array.get(colorInd)));
-        }
-
-        return color_ArrayOut;
-    }
+// Old Protocol Buffer functions
+//    static public Color_ fromProtoBufColor_(BikeWheelAnim.Color_ messageColor_) {
+//        BikeWheelAnim.Color_.ColorType type = messageColor_.getType();
+//
+//        // Depending on what type of Color_ is stored, create a different Color_ object
+//        Color_ newColor;
+//        switch (type) {
+//            case STATIC:
+//                newColor = new Color_Static(colorObj.fromProtoBuf(messageColor_.getColorObjs(0)));
+//                break;
+//            case D_TIME:
+//                newColor = new Color_dTime(Color_d.fromProtoBufColorObjMeta(messageColor_.getColorObjsList()));
+//                break;
+//            case D_VEL:
+//                newColor = new Color_dVel(Color_d.fromProtoBufColorObjMeta(messageColor_.getColorObjsList()));
+//                break;
+//            default:
+//                newColor = new Color_Static(colorObj.fromProtoBuf(messageColor_.getColorObjs(0)));
+//                break;
+//        }
+//
+//        return newColor;
+//    }
+//
+//    static public ArrayList<Color_> fromProtoBufColor_(List<BikeWheelAnim.Color_> messageColor_Array) {
+//        ArrayList<Color_> color_ArrayOut = new ArrayList<>();
+//
+//        for (int colorInd = 0; colorInd < messageColor_Array.size(); colorInd++) {
+//            color_ArrayOut.add(Color_.fromProtoBufColor_(messageColor_Array.get(colorInd)));
+//        }
+//
+//        return color_ArrayOut;
+//    }
 }

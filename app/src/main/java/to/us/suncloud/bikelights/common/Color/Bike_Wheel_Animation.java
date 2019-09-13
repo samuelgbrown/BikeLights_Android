@@ -3,12 +3,16 @@ package to.us.suncloud.bikelights.common.Color;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
+import to.us.suncloud.bikelights.common.Bluetooth.BluetoothByteList;
+import to.us.suncloud.bikelights.common.Bluetooth.BluetoothByteList.ContentType;
+import to.us.suncloud.bikelights.common.ByteMath;
 import to.us.suncloud.bikelights.common.Constants;
 import to.us.suncloud.bikelights.common.Image.ImageMeta_;
 import to.us.suncloud.bikelights.common.Image.Image_Meta_ConstRot;
 import to.us.suncloud.bikelights.common.Image.Image_Meta_Spinner;
-import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
+//import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
 
 public class Bike_Wheel_Animation implements Serializable {
     // Main data
@@ -16,6 +20,7 @@ public class Bike_Wheel_Animation implements Serializable {
     private ArrayList<Integer> mImageMain; // Initialize the mImageMain
     private ArrayList<Integer> mImageIdle; // Initialize the mImageMain
 
+    // TODO: Add an image meta for the main and idle image
     // Meta data
     private ImageMeta_ mImageMeta = new Image_Meta_ConstRot(0); // The meta data for this Bike_Wheel_Animation
 //    private float brightnessScale = 1; // TODO: Use colorObj#scale to generate new colorObj's with a brightness scale GIVEN BY THE MAIN ACTIVITY.  Value between (0 1] that scales the brightness of all LED values (allows user to quickly and easily scale the brightness of the wheel as a whole)
@@ -256,58 +261,147 @@ public class Bike_Wheel_Animation implements Serializable {
         }
     }
 
-    private ArrayList<BikeWheelAnim.Color_> getPaletteBuf() {
-        ArrayList<BikeWheelAnim.Color_> paletteBuf = new ArrayList<>();
-        for (int colorInd = 0; colorInd < numColors(); colorInd++) {
-            paletteBuf.add(mPalette.get(colorInd).getColorBuf());
+    // New byte-level manipulation code
+    public BluetoothByteList toByteList() {
+        // Create a byte-list (ready to be sent to the Arduino, minus headers) from this Bike_Wheel_Anim
+        BluetoothByteList byteList = new BluetoothByteList(ContentType.BWA);
+
+        // First, create a content header that includes information about the number of LEDs and the size of the palette
+        byteList.addByte((byte) mImageMain.size());
+        byteList.addByte((byte) mPalette.size());
+
+        // For each Color_ in the Palette, encode the information to the byteList
+        for (int color_Num = 0;color_Num < mPalette.size();color_Num++) {
+            byteList.addBytes(mPalette.get(color_Num).toByteList());
         }
 
-        return paletteBuf;
-    }
+        // Finally, encode the images information
+        // Start with the header for the image
+        byte imageHeaderByte = (byte) 0x00; // Initialize it to zero
+        imageHeaderByte = ByteMath.putBoolToByte(imageHeaderByte, mImageMeta.supportsIdle(), 4); // Record whether or not the idle is supported
+        imageHeaderByte = ByteMath.putDataToByte(imageHeaderByte, mImageMeta.getImageTypeByte(), 4, 0);
+        byteList.addByte(imageHeaderByte);
 
-    public BikeWheelAnim toProtoBuf() {
-        BikeWheelAnim.Builder BWAProto = BikeWheelAnim.newBuilder()
-                // Add number of LEDs
-                .setNumLeds(mImageMain.size())
+        // Add in the parameter for the main image
+        switch (mImageMeta.getImageType()) {
+            case Constants.IMAGE_CONSTROT:
+                byteList.addByte((byte) ((Image_Meta_ConstRot) mImageMeta).getRotationSpeed());
+                break;
+            case Constants.IMAGE_SPINNER:
+                byteList.addByte((byte) ((Image_Meta_Spinner) mImageMeta).getInertia());
+                break;
+        }
 
-                // Add the palette
-                .addAllPalette(getPaletteBuf())
+        // Add the main image
+        addImageToByteList(byteList, mImageMain); // Add the main image to the byteList
 
-                // Add the main Image
-                .addAllImageMain(mImageMain)
-
-                // Add ImageMeta
-                .setImageMeta(BikeWheelAnim.ImageMeta.newBuilder()
-                        .setType(mImageMeta.getImageTypeBuf())
-                        .setParameterSet(mImageMeta.getImageParameterBuf())
-                );
-
-        // If there is an idle image, add that too
+        // If there exists an idle image, add it to the byteList
         if (mImageMeta.supportsIdle()) {
-            BWAProto.addAllImageIdle(mImageIdle);
+            // Put in the type for the idle image (at the moment, only a wheel-relative idle image is supported, but who knows what the future will bring?)
+            // TODO: Add the mImageMetaIdle type, or whatever the hell I call it
+            // byteList.addByte(mImageMetaIdle.getImageTypeByte());
+
+            // Add the parameter for the idle image
+//            switch (mImageMeta.getImageType()) {
+//                case Constants.IMAGE_CONSTROT:
+//                    byteList.addByte((byte) ((Image_Meta_ConstRot) mImageMetaIdle).getRotationSpeed());
+//                    break;
+//                case Constants.IMAGE_SPINNER:
+//                    byteList.addByte((byte) ((Image_Meta_Spinner) mImageMetaIdle).getInertia());
+//                    break;
+//            }
+
+            // Add the idle image itself
+            addImageToByteList(byteList, mImageIdle);
         }
 
-//        BikeWheelAnim bwa_message = BWAProto.build();
-//        bwa_message.getSerializedSize();
-
-        return BWAProto.build();
+        // Return the completed byteList!!!
+        return byteList;
     }
 
-    static public Bike_Wheel_Animation fromProtoBuf(BikeWheelAnim messageBWA) {
-        // Extract all of the information from the message
-        ArrayList<Color_> palette = Color_.fromProtoBufColor_(messageBWA.getPaletteList()); // Get the palette from the message
-        ArrayList<Integer> imageMain = new ArrayList<>(messageBWA.getImageMainList()); // Get the main image
-        ImageMeta_ imageMeta = ImageMeta_.fromProtoBuf(messageBWA.getImageMeta()); // Get the image meta
+    private void addImageToByteList(BluetoothByteList byteList, List<Integer> image) {
+        for (int byteNum = 0;byteNum < (image.size()/2);byteNum++) {
+            // Create a zero'd byte to add the image data to
+            byte thisByte = 0x00;
 
-        ArrayList<Integer> imageIdle;
-        if (imageMeta.supportsIdle()) {
-            imageIdle = new ArrayList<>(messageBWA.getImageIdleList()); // If this pattern supports an idle animation, get it from the message
-        } else {
-            // If there is no idle supported for this pattern, then image idle should be null
-            imageIdle = null;
+            // Add the image data
+            thisByte = ByteMath.putDataToByte(thisByte, (byte) image.get(byteNum*2).intValue(), 4, 0);
+            thisByte = ByteMath.putDataToByte(thisByte, (byte) image.get(byteNum*2 + 1).intValue(), 4, 4);
+
+            // Add the newly constructed byte to the list
+            byteList.addByte(thisByte);
         }
-
-        // Compile the new information into a new BWA object, and return it
-        return new Bike_Wheel_Animation(palette, imageMain, imageIdle, imageMeta);
     }
+
+    static public Bike_Wheel_Animation fromByteList(BluetoothByteList rawByteList) {
+        // TODO: Create a Bike_Wheel_Animation from a byteList (this is the form that will be retrieved from the Arduino via Bluetooth)
+        // TODO: May use Byte.toUnsignedInt()
+
+        int curListLoc = 0; // A counter to keep track of how far into the rawByteList we are
+        // First, extract the number of LEDs and the size of the Color_ palette
+        int numLEDs = rawByteList.getByte(curListLoc++);
+        int numColors = rawByteList.getByte(curListLoc++);
+
+        // Create and populate the palette
+        ArrayList<Color_> palette = new ArrayList<Color_>(numColors);
+        for (int colorNum = 0;colorNum < numColors;colorNum++) {
+            int colorType = ;
+        }
+    }
+
+    // Old Protocol Buffer functions
+//    private ArrayList<BikeWheelAnim.Color_> getPaletteBuf() {
+//        ArrayList<BikeWheelAnim.Color_> paletteBuf = new ArrayList<>();
+//        for (int colorInd = 0; colorInd < numColors(); colorInd++) {
+//            paletteBuf.add(mPalette.get(colorInd).getColorBuf());
+//        }
+//
+//        return paletteBuf;
+//    }
+//
+//    public BikeWheelAnim toProtoBuf() {
+//        BikeWheelAnim.Builder BWAProto = BikeWheelAnim.newBuilder()
+//                // Add number of LEDs
+//                .setNumLeds(mImageMain.size())
+//
+//                // Add the palette
+//                .addAllPalette(getPaletteBuf())
+//
+//                // Add the main Image
+//                .addAllImageMain(mImageMain)
+//
+//                // Add ImageMeta
+//                .setImageMeta(BikeWheelAnim.ImageMeta.newBuilder()
+//                        .setType(mImageMeta.getImageTypeBuf())
+//                        .setParameterSet(mImageMeta.getImageParameterBuf())
+//                );
+//
+//        // If there is an idle image, add that too
+//        if (mImageMeta.supportsIdle()) {
+//            BWAProto.addAllImageIdle(mImageIdle);
+//        }
+//
+////        BikeWheelAnim bwa_message = BWAProto.build();
+////        bwa_message.getSerializedSize();
+//
+//        return BWAProto.build();
+//    }
+//
+//    static public Bike_Wheel_Animation fromProtoBuf(BikeWheelAnim messageBWA) {
+//        // Extract all of the information from the message
+//        ArrayList<Color_> palette = Color_.fromProtoBufColor_(messageBWA.getPaletteList()); // Get the palette from the message
+//        ArrayList<Integer> imageMain = new ArrayList<>(messageBWA.getImageMainList()); // Get the main image
+//        ImageMeta_ imageMeta = ImageMeta_.fromProtoBuf(messageBWA.getImageMeta()); // Get the image meta
+//
+//        ArrayList<Integer> imageIdle;
+//        if (imageMeta.supportsIdle()) {
+//            imageIdle = new ArrayList<>(messageBWA.getImageIdleList()); // If this pattern supports an idle animation, get it from the message
+//        } else {
+//            // If there is no idle supported for this pattern, then image idle should be null
+//            imageIdle = null;
+//        }
+//
+//        // Compile the new information into a new BWA object, and return it
+//        return new Bike_Wheel_Animation(palette, imageMain, imageIdle, imageMeta);
+//    }
 }

@@ -94,29 +94,42 @@ public class colorObj implements Serializable {
         return Color.rgb(getR(), getG(), getB());
     }
 
-    public BikeWheelAnim.Color_.ColorObj getColorObjBuf() {
-        return BikeWheelAnim.Color_.ColorObj.newBuilder()
-                .setR(getR())
-                .setG(getG())
-                .setB(getB())
-                .setW(getW())
-                .build();
+// New byte-level manipulation code
+    public List<Byte> toByteList() {
+        // Return a byte list that represents the color as unsigned 8-bit integers
+        List<Byte> returnList = new ArrayList<Byte>(4); // Preallocate 4 bytes for the ArrayList
+        returnList.add(r);
+        returnList.add(g);
+        returnList.add(b);
+        returnList.add(w);
+
+        return returnList;
     }
 
-    static public colorObj fromProtoBuf(BikeWheelAnim.Color_.ColorObj messageCO) {
-        int[] RGBW = {messageCO.getR(), messageCO.getG(), messageCO.getB(), messageCO.getW()};
-        return new colorObj(RGBW);
-    }
-
-    static public ArrayList<colorObj> fromProtoBuf(List<BikeWheelAnim.Color_.ColorObj> messageCOArray) {
-        ArrayList<colorObj> colorObjArrayOut = new ArrayList<>();
-
-        for (int colorInd = 0; colorInd < messageCOArray.size(); colorInd++) {
-            colorObjArrayOut.add(fromProtoBuf(messageCOArray.get(colorInd)));
-        }
-
-        return colorObjArrayOut;
-    }
+    // Old Protocol Buffer functions
+//    public BikeWheelAnim.Color_.ColorObj getColorObjBuf() {
+//        return BikeWheelAnim.Color_.ColorObj.newBuilder()
+//                .setR(getR())
+//                .setG(getG())
+//                .setB(getB())
+//                .setW(getW())
+//                .build();
+//    }
+//
+//    static public colorObj fromProtoBuf(BikeWheelAnim.Color_.ColorObj messageCO) {
+//        int[] RGBW = {messageCO.getR(), messageCO.getG(), messageCO.getB(), messageCO.getW()};
+//        return new colorObj(RGBW);
+//    }
+//
+//    static public ArrayList<colorObj> fromProtoBuf(List<BikeWheelAnim.Color_.ColorObj> messageCOArray) {
+//        ArrayList<colorObj> colorObjArrayOut = new ArrayList<>();
+//
+//        for (int colorInd = 0; colorInd < messageCOArray.size(); colorInd++) {
+//            colorObjArrayOut.add(fromProtoBuf(messageCOArray.get(colorInd)));
+//        }
+//
+//        return colorObjArrayOut;
+//    }
 
     private colorObj getRGBEquivalent() {
         // Get the equivalent to this colorObj using only RGB value
