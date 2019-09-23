@@ -8,13 +8,16 @@ import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -25,10 +28,14 @@ import to.us.suncloud.bikelights.common.Color.Color_;
 import to.us.suncloud.bikelights.common.Color.Bike_Wheel_Animation;
 import to.us.suncloud.bikelights.common.Constants;
 import to.us.suncloud.bikelights.common.Image.ImageMeta_;
-import to.us.suncloud.bikelights.common.Image.Image_Meta_ConstRot;
+import to.us.suncloud.bikelights.common.Image.Image_Meta_ConstRot_;
+import to.us.suncloud.bikelights.common.Image.Image_Meta_ConstRot_GRel;
+import to.us.suncloud.bikelights.common.Image.Image_Meta_ConstRot_WRel;
 import to.us.suncloud.bikelights.common.Image.Image_Meta_Spinner;
 
 public class ImageDefineFragment extends Fragment implements ImageModFragment.ImageModListener {
+    private final static String TAG = "ImageDefineFragment";
+
     public static final String IS_IDLE = "IS_IDLE";
     public static final String BIKE_WHEEL_ANIMATION = "BIKE_WHEEL_ANIMATION";
     public static final String IMAGE_STACK = "IMAGE_STACK";
@@ -96,7 +103,6 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
             }
 
 //            imageToReturn = new ArrayList<>(imagesList.get(curStackLocation));
-
 
             // Update the GUI
             updateImageGUI();
@@ -190,6 +196,7 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
         }
     }
 
+    Spinner imageMetaSpinner; // Spinner to choose the type of Image meta data to store (rotation or inertia [for spinner]?
     ImageView wheelView; // The wheel view of this image
     TextView attrText; // The textview that shows the name of the current attribute
     SeekBar attrSeekbar; // The seekbar that modifies the attribute
@@ -267,6 +274,7 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
         attrRight = rootView.findViewById(R.id.attribute_right);
         attrVal = rootView.findViewById(R.id.attribute_val);
         attrContainer = rootView.findViewById(R.id.imageTypeContainer);
+        imageMetaSpinner = rootView.findViewById(R.id.image_meta_spinner);
 
         // Extract information from the arguments bundle
         Bundle args = getArguments();
@@ -285,8 +293,81 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
             isIdle = false;
         }
 
+        // Set up the spinner for the Image Meta type (either main or idle)
+        int imageMetaSpinnerResourceID;
+        AdapterView.OnItemSelectedListener imageMetaItemSelectedListener;
+
+        if (isIdle) {
+            // If this is an idle image, then only wheel-relative motion can be used
+            imageMetaSpinnerResourceID = R.array.image_idle_meta_types;
+
+            imageMetaItemSelectedListener = new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    String choice = (String) parent.getItemAtPosition(position);
+
+                    if (getResources().getString(R.string.WRel_Const).equals(choice)) {
+//                    imageDefineAdapter.setImageMainMeta(Constants.IMAGE_CONSTROT_WREL);
+                        setAttributeType(Constants.IMAGE_CONSTROT_WREL);
+                    } else {
+                        // Uh oh...
+                        Log.e(TAG, "Got illegal Idle ImageMetaSpinner choice.");
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            };
+        } else {
+            // If this is a main image, then any type of image can be used
+            imageMetaSpinnerResourceID = R.array.image_main_meta_types;
+
+            imageMetaItemSelectedListener = new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    String choice = (String) parent.getItemAtPosition(position);
+
+                    if (getResources().getString(R.string.WRel_Const).equals(choice)) {
+//                    imageDefineAdapter.setImageMainMeta(Constants.IMAGE_CONSTROT_WREL);
+                        setAttributeType(Constants.IMAGE_CONSTROT_WREL);
+                    } else if (getResources().getString(R.string.GRel_Const).equals(choice)) {
+//                    imageDefineAdapter.setImageMainMeta(Constants.IMAGE_CONSTROT_GREL);
+                        setAttributeType(Constants.IMAGE_CONSTROT_GREL);
+                    } else if (getResources().getString(R.string.Spinner_Wheel).equals(choice)) {
+//                    imageDefineAdapter.setImageMainMeta(Constants.IMAGE_SPINNER);
+                        setAttributeType(Constants.IMAGE_SPINNER);
+                    } else {
+                        // Uh oh...
+                        Log.e(TAG, "Got illegal Main ImageMetaSpinner choice.");
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            };
+        }
+
+        // Populate the spinner according to the above selections
+        ArrayAdapter imageMetaSpinnerAdapter = ArrayAdapter.createFromResource(getContext(), imageMetaSpinnerResourceID, android.R.layout.simple_spinner_item);
+        imageMetaSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        imageMetaSpinner.setAdapter(imageMetaSpinnerAdapter);
+        imageMetaSpinner.setOnItemSelectedListener(imageMetaItemSelectedListener);
+
+        // Initialize the spinner choice (take into account whether this is an idle or main fragment)
+        int imageMetaSpinnerChoice;
+        if (isIdle) {
+            imageMetaSpinnerChoice = imageMetaTypeToSpinnerPos(initializeBikeWheelAnimation.getImageIdleMeta().getImageType());
+        } else {
+            imageMetaSpinnerChoice = imageMetaTypeToSpinnerPos(initializeBikeWheelAnimation.getImageMainMeta().getImageType());
+        }
+        
+        imageMetaSpinner.setSelection(imageMetaSpinnerChoice, false); // Set the original image meta type in the GUI
+
         // Set up the drawable for the wheelView image view
-        wheelView = rootView.findViewById(R.id.wheelView);
         ledViewDrawable = new LEDViewDrawable(wheelView, getResources().getInteger(R.integer.num_leds));
         wheelView.setBackground(ledViewDrawable);
 
@@ -328,6 +409,7 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
         });
 
         // Set up the Image Modification Spinner
+        // TODO: Change this spinner's behavior if it's an idle image?
         imageModSpinner = rootView.findViewById(R.id.imageModSpinner);
         imageModSpinner.setAdapter(new ImageModSpinnerAdapter(getContext()));
         imageModSpinner.setSelection(0, false);
@@ -368,10 +450,12 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
         setPalette(initializeBikeWheelAnimation.getPalette()); // Set the palette
 
         if (isIdle) {
-            setAttributeType(Constants.IMAGE_IDLE); // Initialize how this fragment should display
+            // TODO: Check this...I changed it because I don't think it made sense...?
+            setAttributeType(Constants.IMAGE_CONSTROT_WREL); // Initialize how this fragment should display
+//            setAttributeType(Constants.IMAGE_IDLE); // Initialize how this fragment should display
             imageStack = new ImageStack(new ArrayList<>(initializeBikeWheelAnimation.getImageIdle())); // Initialize the Image for this fragment
         } else {
-            setAttribute(initializeBikeWheelAnimation.getImageMeta()); // Set the image meta type and its current value
+            setAttribute(initializeBikeWheelAnimation.getImageMainMeta()); // Set the image meta type and its current value
             imageStack = new ImageStack(new ArrayList<>(initializeBikeWheelAnimation.getImageMain()));
         }
 
@@ -402,8 +486,11 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
 
         // Save the attribute value
         switch (newAttrType) {
-            case Constants.IMAGE_CONSTROT:
-                curAttrVal = ((Image_Meta_ConstRot) newImageMeta).getRotationSpeed();
+            case Constants.IMAGE_CONSTROT_WREL:
+                curAttrVal = ((Image_Meta_ConstRot_WRel) newImageMeta).getRotationSpeed();
+                break;
+            case Constants.IMAGE_CONSTROT_GREL:
+                curAttrVal = ((Image_Meta_ConstRot_GRel) newImageMeta).getRotationSpeed();
                 break;
             case Constants.IMAGE_SPINNER:
                 curAttrVal = ((Image_Meta_Spinner) newImageMeta).getInertia();
@@ -415,15 +502,16 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
     }
 
     public void setAttributeType(int newAttrType) {
-        // Initialize the textbox, set the bounds and position of the seekbar, and call setAttrVal
-
         // Save the old attribute type
         switch (curAttrType) {
-            case Constants.IMAGE_CONSTROT:
+            case Constants.IMAGE_CONSTROT_WREL:
                 storedAttrVals.set(0, curAttrVal);
                 break;
-            case Constants.IMAGE_SPINNER:
+            case Constants.IMAGE_CONSTROT_GREL:
                 storedAttrVals.set(1, curAttrVal);
+                break;
+            case Constants.IMAGE_SPINNER:
+                storedAttrVals.set(2, curAttrVal);
                 break;
             default:
                 // If the fragment was just initialized, don't save any old values, because they don't exist yet!
@@ -437,23 +525,21 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
         int attrVal = 0;
         int maxVal = 0;
         int minVal = 0;
-        switch (newAttrType) {
-            case Constants.IMAGE_CONSTROT:
-                isAdjustable = true;
-                attrString = getResources().getString(R.string.Rotation_Rate);
-                attrVal = storedAttrVals.get(0);
-                maxVal = getResources().getInteger(R.integer.max_speed);
-                minVal = -1 * getResources().getInteger(R.integer.max_speed);
-                break;
-            case Constants.IMAGE_SPINNER:
-                isAdjustable = true;
-                attrString = getResources().getString(R.string.Inertia);
-                attrVal = storedAttrVals.get(1);
-                maxVal = getResources().getInteger(R.integer.max_inertia);
-                minVal = 0;
-                break;
-            default:
-                isAdjustable = false;
+
+        if (newAttrType == Constants.IMAGE_CONSTROT_WREL || newAttrType == Constants.IMAGE_CONSTROT_GREL) {
+            isAdjustable = true;
+            attrString = getResources().getString(R.string.Rotation_Rate);
+            attrVal = storedAttrVals.get(0);
+            maxVal = getResources().getInteger(R.integer.max_speed);
+            minVal = -1 * getResources().getInteger(R.integer.max_speed);
+        } else if (newAttrType == Constants.IMAGE_SPINNER) {
+            isAdjustable = true;
+            attrString = getResources().getString(R.string.Inertia);
+            attrVal = storedAttrVals.get(1);
+            maxVal = getResources().getInteger(R.integer.max_inertia);
+            minVal = 0;
+        } else {
+            isAdjustable = false;
         }
 
         // Adjust the GUI
@@ -483,7 +569,7 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
             rotationAnimator.cancel();
         }
 
-        if (curAttrType == Constants.IMAGE_CONSTROT) {
+        if (curAttrType == Constants.IMAGE_CONSTROT_WREL || curAttrType == Constants.IMAGE_CONSTROT_GREL) {
             int rotEnd = getResources().getInteger(R.integer.num_leds);
             if (curAttrVal == 0) {
                 // Do not animate the speed if it is 0
@@ -506,7 +592,7 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
 
 //    public ImageMeta_ getCurImageMeta() {
 //        switch (curAttrType) {
-//            case Constants.IMAGE_CONSTROT:
+//            case Constants.IMAGE_CONSTROT_:
 //
 //            case Constants.IMAGE_SPINNER:
 //        }
@@ -593,6 +679,20 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
         }
     }
 
+    private int imageMetaTypeToSpinnerPos(int imageMetaType) {
+        switch (imageMetaType) {
+            case Constants.IMAGE_CONSTROT_WREL:
+                return 0;
+            case Constants.IMAGE_CONSTROT_GREL:
+                return 1;
+            case Constants.IMAGE_SPINNER:
+                return 2;
+            default:
+                // Uh-oh...
+                return 0;
+        }
+    }
+
     public ArrayList<Integer> getImage() {
         return imageStack.currentImage();
     }
@@ -600,15 +700,18 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
     public ImageMeta_ getImageMeta() {
         ImageMeta_ newImageMeta_;
         switch (curAttrType) {
-            case Constants.IMAGE_CONSTROT:
-                newImageMeta_ = new Image_Meta_ConstRot(curAttrVal);
+            case Constants.IMAGE_CONSTROT_WREL:
+                newImageMeta_ = new Image_Meta_ConstRot_WRel(curAttrVal);
+                break;
+            case Constants.IMAGE_CONSTROT_GREL:
+                newImageMeta_ = new Image_Meta_ConstRot_GRel(curAttrVal);
                 break;
             case Constants.IMAGE_SPINNER:
                 newImageMeta_ = new Image_Meta_Spinner(curAttrVal);
                 break;
             default:
                 // Uh oh...
-                newImageMeta_ = new Image_Meta_ConstRot(0);
+                newImageMeta_ = new Image_Meta_ConstRot_WRel(0);
         }
 
         return newImageMeta_;

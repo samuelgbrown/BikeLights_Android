@@ -12,9 +12,10 @@
         android:layout_marginBottom="8dp"
         android:background="#e0e0e0"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0"
-        tools:layout_editor_absoluteX="0dp">
+        app:layout_constraintVertical_bias="1.0">
 
         <ImageView
             android:id="@+id/ColorObj_Preview"
@@ -29,6 +30,75 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <TextView
+            android:id="@+id/color_num_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
+            android:textAlignment="viewStart"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/OptionsContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/Color_Settings_Container">
+
+            <ImageView
+                android:id="@+id/copyColor"
+                android:layout_width="@dimen/color_obj_delete_dim"
+                android:layout_height="@dimen/color_obj_delete_dim"
+                android:layout_marginEnd="24dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toStartOf="@+id/removeColor"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/copy" />
+
+            <ImageView
+                android:id="@+id/removeColor"
+                android:layout_width="@dimen/color_obj_delete_dim"
+                android:layout_height="@dimen/color_obj_delete_dim"
+                android:layout_marginEnd="24dp"
+                android:tint="@android:color/holo_red_dark"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toStartOf="@+id/moveColorUp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@android:drawable/ic_menu_delete" />
+
+            <ImageView
+                android:id="@+id/moveColorUp"
+                android:layout_width="@dimen/color_obj_delete_dim"
+                android:layout_height="@dimen/color_obj_move_dim"
+                android:layout_marginEnd="8dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toStartOf="@+id/moveColorDown"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@android:drawable/arrow_up_float" />
+
+            <ImageView
+                android:id="@+id/moveColorDown"
+                android:layout_width="@dimen/color_obj_delete_dim"
+                android:layout_height="@dimen/color_obj_move_dim"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@android:drawable/arrow_down_float" />
+        </android.support.constraint.ConstraintLayout>
+
         <android.support.constraint.ConstraintLayout
             android:id="@+id/Color_Settings_Container"
             android:layout_width="wrap_content"
@@ -39,6 +109,54 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/ColorObj_Preview"
             app:layout_constraintTop_toTopOf="parent">
+
+            <EditText
+                android:id="@+id/colorObj_T"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:imeOptions="actionDone"
+                android:inputType="number"
+                android:maxLength="5"
+                android:singleLine="true"
+                android:text="7777"
+                app:layout_constraintStart_toEndOf="@+id/text_T"
+                app:layout_constraintTop_toBottomOf="@id/Color_Portions_Container" />
+
+            <Spinner
+                android:id="@+id/blendTypeSpinner"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/textView4"
+                app:layout_constraintTop_toBottomOf="@id/Color_Portions_Container" />
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/color_quality_b"
+                app:layout_constraintBottom_toBottomOf="@+id/blendTypeSpinner"
+                app:layout_constraintStart_toEndOf="@+id/colorObj_T"
+                app:layout_constraintTop_toTopOf="@+id/blendTypeSpinner" />
+
+            <TextView
+                android:id="@+id/text_T"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/color_quality_time"
+                app:layout_constraintBottom_toBottomOf="@+id/colorObj_T"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/colorObj_T" />
 
             <android.support.constraint.ConstraintLayout
                 android:id="@+id/Color_Portions_Container"
@@ -105,135 +223,18 @@
                     android:layout_height="wrap_content"
                     android:backgroundTint="@color/red"
                     android:ems="10"
+                    android:imeOptions="actionDone"
                     android:inputType="number"
                     android:singleLine="true"
                     android:text="255"
                     android:textAlignment="center"
                     android:visibility="visible"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    android:imeOptions="actionDone" />
+                    app:layout_constraintTop_toTopOf="parent" />
 
             </android.support.constraint.ConstraintLayout>
 
-            <TextView
-                android:id="@+id/text_T"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:text="@string/color_quality_time"
-                app:layout_constraintBottom_toBottomOf="@+id/colorObj_T"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/colorObj_T" />
-
-            <EditText
-                android:id="@+id/colorObj_T"
-                android:layout_width="50dp"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:imeOptions="actionDone"
-                android:inputType="number"
-                android:maxLength="5"
-                android:singleLine="true"
-                android:text="7777"
-                app:layout_constraintStart_toEndOf="@+id/text_T"
-                app:layout_constraintTop_toBottomOf="@id/Color_Portions_Container" />
-
-            <TextView
-                android:id="@+id/textView4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:text="@string/color_quality_b"
-                app:layout_constraintBottom_toBottomOf="@+id/blendTypeSpinner"
-                app:layout_constraintStart_toEndOf="@+id/colorObj_T"
-                app:layout_constraintTop_toTopOf="@+id/blendTypeSpinner" />
-
-            <Spinner
-                android:id="@+id/blendTypeSpinner"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/textView4"
-                app:layout_constraintTop_toBottomOf="@id/Color_Portions_Container" />
-
         </android.support.constraint.ConstraintLayout>
-
-        <android.support.constraint.ConstraintLayout
-            android:id="@+id/OptionsContainer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/Color_Settings_Container">
-
-            <ImageView
-                android:id="@+id/copyColor"
-                android:layout_width="@dimen/color_obj_delete_dim"
-                android:layout_height="@dimen/color_obj_delete_dim"
-                android:layout_marginEnd="24dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintEnd_toStartOf="@+id/removeColor"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/copy" />
-
-            <ImageView
-                android:id="@+id/removeColor"
-                android:layout_width="@dimen/color_obj_delete_dim"
-                android:layout_height="@dimen/color_obj_delete_dim"
-                android:layout_marginEnd="24dp"
-                android:tint="@android:color/holo_red_dark"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintEnd_toStartOf="@+id/moveColorUp"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@android:drawable/ic_menu_delete" />
-
-            <ImageView
-                android:id="@+id/moveColorUp"
-                android:layout_width="@dimen/color_obj_delete_dim"
-                android:layout_height="@dimen/color_obj_move_dim"
-                android:layout_marginEnd="8dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintEnd_toStartOf="@+id/moveColorDown"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@android:drawable/arrow_up_float" />
-
-            <ImageView
-                android:id="@+id/moveColorDown"
-                android:layout_width="@dimen/color_obj_delete_dim"
-                android:layout_height="@dimen/color_obj_move_dim"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@android:drawable/arrow_down_float" />
-        </android.support.constraint.ConstraintLayout>
-
-        <TextView
-            android:id="@+id/color_num_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginBottom="8dp"
-            android:textAlignment="viewStart"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
 
     </android.support.constraint.ConstraintLayout>
 

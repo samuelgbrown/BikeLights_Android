@@ -35,7 +35,12 @@ public class Image_Meta_Spinner extends ImageMeta_ {
         }
     }
 
-//    public void incrementInertia() {
+    @Override
+    public String getImageDescription() {
+        return "Image moves like a \"Spinner\" Hubcap";
+    }
+
+    //    public void incrementInertia() {
 //        inertia++;
 //    }
 //
@@ -50,7 +55,7 @@ public class Image_Meta_Spinner extends ImageMeta_ {
 
     @Override
     public byte getImageTypeByte() {
-        return 0x02;
+        return 2;
     }
 
     //    @Override

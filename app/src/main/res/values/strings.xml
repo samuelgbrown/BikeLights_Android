@@ -102,6 +102,10 @@
     <string name="apply">Apply</string>
     <string name="delete">Delete</string>
 
+    <string name="image_desc_spinner">Image moves like a "Spinner" Hubcap</string>
+    <string name="image_desc_constrot_grel">Image moves with a constant speed relative to the ground</string>
+    <string name="image_desc_constrot_wrel">Image moves with a constant speed relative to the wheel</string>
+
     <string name="dialog_savedbwa_title">Saved Animations</string>
     <string name="dialog_savedbwa_message">Please select a saved Animation to apply to the wheel.</string>
     <string name="bwa_empty">It seems there are no saved Animations. Try creating one and bookmarking it!</string>
@@ -164,11 +168,17 @@
         <item>@string/Blend_Constant</item>
     </string-array>
 
-    <string name="Constant_Speed">Constant Speed</string>
+    <string name="WRel_Const">Wheel-Relative Rotation</string>
+    <string name="GRel_Const">Ground-Relative Rotation</string>
     <string name="Spinner_Wheel">Spinner</string>
-    <string-array name="image_meta_types">
-        <item>@string/Constant_Speed</item>
+    <string-array name="image_main_meta_types">
+        <item>@string/WRel_Const</item>
+        <item>@string/GRel_Const</item>
         <item>@string/Spinner_Wheel</item>
+    </string-array>
+
+    <string-array name="image_idle_meta_types">
+        <item>@string/WRel_Const</item>
     </string-array>
 
     <string name="Rotation_Rate">Rotation rate</string>

@@ -201,7 +201,7 @@ public class LEDViewDrawable extends Drawable implements Serializable {
             AnimatorSet newSet = palette.get(colorInd).modColor_Animator(newPaint, paintAnimatorSets.get(colorInd), "color");
             paintAnimatorSets.set(colorInd, newSet);
 
-            // TODO: If this doesn't work, first test that the timer is calling invalidate() properly; Try setting up a test button that invalidates the wheelView (or calls invalidateSelf()) to see if anything changes
+            // TO_DO: If this doesn't work, first test that the timer is calling invalidate() properly; Try setting up a test button that invalidates the wheelView (or calls invalidateSelf()) to see if anything changes
 
             // Set this new Paint object
             colorPaints.add(newPaint);
@@ -233,7 +233,7 @@ public class LEDViewDrawable extends Drawable implements Serializable {
     }
 
 //    public void setBikeWheelAnimation(Bike_Wheel_Animation bikeWheelAnimation) {
-//        this.bikeWheelAnimation = bikeWheelAnimation; // TODO: Make sure that this interacts with slice-width and slice-repeat properly (is only the OLD image where there isn't a selection/repeat of the selection)
+//        this.bikeWheelAnimation = bikeWheelAnimation; // TO_DO: Make sure that this interacts with slice-width and slice-repeat properly (is only the OLD image where there isn't a selection/repeat of the selection)
 //
 //        // Recalculate the paints with this new Bike_Wheel_Animation
 //        precalcPaints();

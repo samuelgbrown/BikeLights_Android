@@ -124,7 +124,7 @@ public class ModColorFragment extends DialogFragment {
         // Inflate the layout for this fragment
         View layoutView = inflater.inflate(R.layout.fragment_mod_color, container, false);
 
-        // Set up the cancel button for the animation TODO: Test
+        // Set up the cancel button for the animation TO_DO: Test
 //        Button cancelAnim = layoutView.findViewById(R.id.anim_cancel_button);
 //        cancelAnim.setOnClickListener(new View.OnClickListener() {
 //            @Override

@@ -14,17 +14,14 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.InflateException;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -50,15 +47,15 @@ public class WheelViewActivity extends AppCompatActivity implements ModColorFrag
 
     private boolean bwaIsFromBookmark = false; // Was this Activity started because the user selected a bookmark?  If so, we should assume that the user wants a chance to save before accidentally exiting (the user may want to save even without making any changes, which they wouldn't get a chance to without this check)
     //    private View wheelView; // The View that holds the image of the currently selected wheel
-    private Spinner imageMetaSpinner; // Spinner to choose the type of Image meta data to store (rotation or inertia [for spinner]?
-    //    private int imageMetaType = Constants.IMAGE_CONSTROT;; // The type of image meta data (constant rotation, spinner, etc.)
+//    private Spinner imageMetaSpinner; // Spinner to choose the type of Image meta data to store (rotation or inertia [for spinner]?
+    //    private int imageMetaType = Constants.IMAGE_CONSTROT_;; // The type of image meta data (constant rotation, spinner, etc.)
     private ImageDefinePagerAdapter imageDefineAdapter; // Fragment to define the meta-attribute(s) of the image (rotation speed, inertia of spinner, etc)
 
     private Bike_Wheel_Animation originalBikeWheelAnimation; // The version of the Bike_Wheel_Animation that was given to this Activity, left unchanged to compare to later
     private Bike_Wheel_Animation bikeWheelAnimation; // The Bike_Wheel_Animation that represents the culmination of all editables in this activity
 
-//    private ImageMeta_ image_choice_current = new Image_Meta_ConstRot(); // Current image meta object
-//    private Image_Meta_ConstRot image_choice_constrot = new Image_Meta_ConstRot();
+//    private ImageMeta_ image_choice_current = new Image_Meta_ConstRot_(); // Current image meta object
+//    private Image_Meta_ConstRot_ image_choice_constrot = new Image_Meta_ConstRot_();
 //    private Image_Meta_Spinner image_choice_spinner = new Image_Meta_Spinner();
 
 
@@ -97,14 +94,6 @@ public class WheelViewActivity extends AppCompatActivity implements ModColorFrag
             bwaIsFromBookmark = inputBundle.getBoolean(BWA_FROM_BOOKMARK);
         }
 
-//        // Get the image meta data
-//        if (inputBundle.containsKey(MainActivity.IMAGE_META)) {
-//            // TODO: Make sure that MainActivity handles the ImageMeta_ object correctly
-//            setImageMeta((ImageMeta_) inputBundle.getSerializable(MainActivity.IMAGE_META));
-//        } else {
-//            setImageMeta(new Image_Meta_ConstRot(0));
-//        }
-
         // Set up the toolbar
         Toolbar toolbar = findViewById(R.id.wheelToolbar);
         setSupportActionBar(toolbar);
@@ -122,33 +111,37 @@ public class WheelViewActivity extends AppCompatActivity implements ModColorFrag
         TabLayout tabLayout = findViewById(R.id.image_Tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        // Set up the spinner for the Image Meta type
-        imageMetaSpinner = findViewById(R.id.image_meta_spinner);
-        ArrayAdapter imageMetaSpinnerAdapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.image_meta_types, android.R.layout.simple_spinner_item);
-        imageMetaSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        imageMetaSpinner.setAdapter(imageMetaSpinnerAdapter);
-        imageMetaSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String choice = (String) parent.getItemAtPosition(position);
-
-                if (getResources().getString(R.string.Constant_Speed).equals(choice)) {
-                    imageDefineAdapter.setImageMeta(Constants.IMAGE_CONSTROT);
-                } else if (getResources().getString(R.string.Spinner_Wheel).equals(choice)) {
-                    imageDefineAdapter.setImageMeta(Constants.IMAGE_SPINNER);
-                } else {
-                    // Uh oh...
-                    Log.e(TAG, "Got illegal ImageMetaSpinner choice.");
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-        int imageMetaSpinnerChoice = imageMetaTypeToSpinnerPos(originalBikeWheelAnimation.getImageMeta().getImageType());
-        imageMetaSpinner.setSelection(imageMetaSpinnerChoice, false); // Set the original image meta type in the GUI
+//        // Set up the spinner for the Image Meta type (either main or idle)
+//        // TO_DO: May need to move this spinner one fragment down, so that it is associated with either the main or idle images, instead of the BWA
+//        imageMetaSpinner = findViewById(R.id.image_meta_spinner);
+//        ArrayAdapter imageMetaSpinnerAdapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.image__main_meta_types, android.R.layout.simple_spinner_item);
+//        imageMetaSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//        imageMetaSpinner.setAdapter(imageMetaSpinnerAdapter);
+//        imageMetaSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+//            @Override
+//            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//                String choice = (String) parent.getItemAtPosition(position);
+//
+//                // TO_DO: Ensure that this spinner deals with the new image-meta options properly
+//                if (getResources().getString(R.string.WRel_Const).equals(choice)) {
+//                    imageDefineAdapter.setImageMainMeta(Constants.IMAGE_CONSTROT_WREL);
+//                } else if (getResources().getString(R.string.GRel_Const).equals(choice)) {
+//                    imageDefineAdapter.setImageMainMeta(Constants.IMAGE_CONSTROT_GREL);
+//                } else if (getResources().getString(R.string.Spinner_Wheel).equals(choice)) {
+//                    imageDefineAdapter.setImageMainMeta(Constants.IMAGE_SPINNER);
+//                } else {
+//                    // Uh oh...
+//                    Log.e(TAG, "Got illegal ImageMetaSpinner choice.");
+//                }
+//            }
+//
+//            @Override
+//            public void onNothingSelected(AdapterView<?> parent) {
+//
+//            }
+//        });
+//        int imageMetaSpinnerChoice = imageMetaTypeToSpinnerPos(originalBikeWheelAnimation.getImageMainMeta().getImageType());
+//        imageMetaSpinner.setSelection(imageMetaSpinnerChoice, false); // Set the original image meta type in the GUI
 
 //        constRot_Container = findViewById(R.id.constrot_container);
 //        spinner_Container = findViewById(R.id.spinner_container);
@@ -171,24 +164,24 @@ public class WheelViewActivity extends AppCompatActivity implements ModColorFrag
 
     }
 
-    private int imageMetaTypeToSpinnerPos(int imageMetaType) {
-        switch (imageMetaType) {
-            case Constants.IMAGE_CONSTROT:
-                return 0;
-            case Constants.IMAGE_SPINNER:
-                return 1;
-            default:
-                // Uh-oh...
-                return 0;
-        }
-    }
+//    private int imageMetaTypeToSpinnerPos(int imageMetaType) {
+//        switch (imageMetaType) {
+//            case Constants.IMAGE_CONSTROT_:
+//                return 0;
+//            case Constants.IMAGE_SPINNER:
+//                return 1;
+//            default:
+//                // Uh-oh...
+//                return 0;
+//        }
+//    }
 
 //    @Override
 //    public void imageAttrUpdate(int newAttrVal) {
 //
 //    }
 
-//    private void setImageMeta(int newImageType) {setImageMeta(newImageType, true);}
+//    private void setImageMainMetaType(int newImageType) {setImageMainMetaType(newImageType, true);}
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -2,9 +2,9 @@ package to.us.suncloud.bikelights.common.WheelView;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.widget.Spinner;
+import android.support.v7.widget.AppCompatSpinner;
 
-public class SpinnerSelectListener extends Spinner {
+public class SpinnerSelectListener extends AppCompatSpinner {
     OnItemSelectedListener listener;
 
     public SpinnerSelectListener(Context context) {

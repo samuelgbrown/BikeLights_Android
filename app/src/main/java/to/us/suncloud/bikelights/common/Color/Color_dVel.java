@@ -4,7 +4,7 @@ import java.util.List;
 
 import to.us.suncloud.bikelights.common.ByteMath;
 import to.us.suncloud.bikelights.common.Constants;
-import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
+//import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
 
 public class Color_dVel extends Color_d {
     public Color_dVel() {

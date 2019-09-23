@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 import to.us.suncloud.bikelights.R;
-import to.us.suncloud.bikelights.common.Color.Bike_Wheel_Animation;
 import to.us.suncloud.bikelights.common.Color.Color_;
 import to.us.suncloud.bikelights.common.Color.Color_Static;
 import to.us.suncloud.bikelights.common.Color.Color_d;
@@ -45,6 +44,8 @@ public class ColorDefRecyclerAdapter extends ColorDefRecyclerView.Adapter<ColorD
     private static final int VIEWTYPE_COLOROBJ_S = 1; // Used to refer to a view that describes a static colorObj
     private static final int VIEWTYPE_COLOROBJ_D = 2; // Used to refer to a view that describes a dynamic colorObj
 
+    private static final long MAX_UINT32_VAL = 2^32 - 1;
+
     private static final float[] LEDWhiteRatio = {1f, 1f, 1.2f};
 
     private static final int PAYLOAD_UPDATE_POSITION = 0; // Define payload: update ONLY the position of a viewholder (to update the colornumber text view)
@@ -62,23 +63,23 @@ public class ColorDefRecyclerAdapter extends ColorDefRecyclerView.Adapter<ColorD
     private ImageView colorViewMain = null; // The ImageView that represents the main view of the color as it currently is recorded
     private AnimatorSet colorViewAnimSet = new AnimatorSet();  // The AnimatorSet that controls the repeated color animation of the colorViewMain object.  Gets passed back to the current Color_ object to be cleared and loaded with a new animation
 
-    private final int colorObjDView_r = R.layout.color_obj_view_d_alt;
-    private final int colorObjSView_r = R.layout.color_obj_view_alt;
-    private final int colorObjFooterView_r = R.layout.color_footer_view;
+    final int colorObjDView_r = R.layout.color_obj_view_d_alt;
+    final int colorObjSView_r = R.layout.color_obj_view_alt;
+    final int colorObjFooterView_r = R.layout.color_footer_view;
 
-    public ColorDefRecyclerAdapter(Color_ initialColor) {
+    ColorDefRecyclerAdapter(Color_ initialColor) {
         color_Memory = initialColor;
         setColor_(initialColor);
 
         thisAdapter = this;
     }
 
-    public void setColorViewMain(ImageView colorViewMain) {
+    void setColorViewMain(ImageView colorViewMain) {
         this.colorViewMain = colorViewMain;
     }
 
     public abstract class bindViewHolder extends ColorDefRecyclerView.ViewHolder implements Serializable {
-        public bindViewHolder(final View layoutView) {
+        bindViewHolder(final View layoutView) {
             super(layoutView);
         }
 
@@ -308,14 +309,14 @@ public class ColorDefRecyclerAdapter extends ColorDefRecyclerView.Adapter<ColorD
                     public void onClick(View v) {
                         // Create a new copy of this colorObjMeta
                         Color_d thisCol = (Color_d) color_Choice_Current;
-                        thisCol.addNewColorObj(thisCol.getColorObjMeta(position));
+                        thisCol.addColorObjImpliedT(thisCol.getColorObjMeta(position));
 
                         // Copy any color picker preferences over
                         ColorPickerPreferenceManager manager = ColorPickerPreferenceManager.getInstance(layoutView.getContext());
                         if (manager.getColor(getPrefName(), 0) != 0) {
                             // If a colorPicker preference exists for this colorObj, then add a new preference for this newly created color
                             int newPosition = thisCol.getNumColors() - 1; // The position in thisCol of the new color
-                            String newPrefName = "T" + Integer.toString(thisCol.getColorType()) + "P" + Integer.toString(thisCol.getColorObjMeta(newPosition).getID()); // The unique preferences name of this new color
+                            String newPrefName = "T" + thisCol.getColorType() + "P" + thisCol.getColorObjMeta(newPosition).getID(); // The unique preferences name of this new color
                             String oldPrefName = getPrefName();
 
                             // Set all saved values
@@ -430,19 +431,27 @@ public class ColorDefRecyclerAdapter extends ColorDefRecyclerView.Adapter<ColorD
 
         private boolean processTViewInput(TextView v) {
             CharSequence s = v.getText(); // Get the string to be checked
-            int prevValue = ((Color_d) color_Choice_Current).getT(position); // Get current colorObj
+            long prevValue = ((Color_d) color_Choice_Current).getT(position); // Get current colorObj
 
             if (s != null) {
                 // Get the value from the input
-                int newVal;
+                long newVal;
                 if (s.toString().isEmpty()) {
+                    // If there is no new value, ignore the new one
                     newVal = prevValue;
                 } else {
+                    // If there is some new value, try to convert it to a Long, and save it to newVal
                     try {
-                        newVal = Integer.parseInt(s.toString());
+                        newVal = Long.parseLong(s.toString());
                         if (newVal < 0) {
                             // If the input value is less than 0, then just set it back to the previous value
                             newVal = prevValue;
+                        }
+
+                        if (newVal > MAX_UINT32_VAL) {
+                            // If the input value is greater than MAX_UINT32_VAL (the largest unsigned int value that can be sent to the Arduino), then cap it
+                            // ...why would someone want it this big, anyway...
+                            newVal = MAX_UINT32_VAL;
                         }
                     } catch (NumberFormatException e) {
                         newVal = prevValue;
@@ -489,8 +498,14 @@ public class ColorDefRecyclerAdapter extends ColorDefRecyclerView.Adapter<ColorD
                 if (!s.toString().isEmpty()) {
                     try {
                         newVal = Integer.parseInt(s.toString()); // Try to getP the value set in the text field
-                        if (newVal < 0 || layoutView.getContext().getResources().getInteger(R.integer.max_color_val) < newVal) {
-                            newVal = prevValue; // If the value is out of range, then reset it
+                        if (newVal < 0) {
+                            newVal = prevValue; // If the value is below 0, then reset it
+                        }
+
+                        int maxVal = layoutView.getContext().getResources().getInteger(R.integer.max_color_val);
+                        if (maxVal < newVal) {
+                            // If the value is above its maximum, set it to the cap
+                            newVal = maxVal;
                         }
                     } catch (NumberFormatException e) {
                         // Do nothing
@@ -554,13 +569,13 @@ public class ColorDefRecyclerAdapter extends ColorDefRecyclerView.Adapter<ColorD
 
             // See if this view is describing a colorObj for a Dynamic Color_.  If so, do a bit more processing
             if (viewType == VIEWTYPE_COLOROBJ_D) {
-                int t = ((Color_d) color_Choice_Current).getT(position);
+                long t = ((Color_d) color_Choice_Current).getT(position);
                 Color_d.BLEND_TYPE b = ((Color_d) color_Choice_Current).getB(position);
 
                 // 3. Update the T value
                 tName.setText(getTTypeString(color_Choice_Current.getColorType())); // Set the title for the T type
 //                UPDATING_COLOR = true;
-                tView.setText(Integer.toString(t));
+                tView.setText(Long.toString(t));
 //                UPDATING_COLOR = false;
 
                 // 4. Set up the Blend Spinner
@@ -662,7 +677,7 @@ public class ColorDefRecyclerAdapter extends ColorDefRecyclerView.Adapter<ColorD
                 @Override
                 public void onClick(View v) {
                     // Add a new colorObj to the Color_D
-                    ((Color_d) color_Choice_Current).addNewColorObj();
+                    ((Color_d) color_Choice_Current).addColorObjImpliedT();
 
                     // Notify the adapter that the underlying data set has changed
                     // Let the adapter know something has changed

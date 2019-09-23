@@ -33,7 +33,7 @@ import java.util.List;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
-    // TODO: Allow the user to dynamically set the noise value for the measurements (and possibly the model?)
+    // TODO: Allow the user to dynamically set the noise value for the measurements (and possibly the model noise, as well?)
 
     /**
      * A preference value change listener that updates the preference's summary

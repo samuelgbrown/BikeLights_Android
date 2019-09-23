@@ -73,16 +73,16 @@ ITM (4uint) - The Image Type for the main image.
     0 - Wheel_rel_rot (constant rotation, relative to the wheel)
     1 - Ground_rel_rot (constant rotation, relative to the ground)
     2 - Spinner (rotation behaves like a spinner hub-cap)
-IPM (8sint) - The parameter set for the main Image, dependant on IT
-    0 - The rotation rate
-    1 - The rotation rate
-    2 - The inertia
+IPM (8sint) - The parameter set for the main Image, dependant on ITM
+    0 - IPM represents the rotation rate
+    1 - IPM represents the rotation rate
+    2 - IPM represents the inertia
 IM (byte) - The image values for the main image.  Each half byte (nibble) represents the index in the palette that this LED is colored.  There are N/2 bytes in this portion
 
 IF SI == 1, the bytes in the bracket will be used.  Otherwise, they are excluded.
 ITI (8uint) - The Image Type for the idle image
     0 - Wheel_rel_rot (constant rotation, relative to the wheel)
-IPM (8sint) - The parameter set for the main Image, dependant on IT
+IPM (8sint) - The parameter set for the idle Image, dependant on ITI
     0 - The rotation rate
 II (byte) - The image values for the idle image.  Each half byte (nibble) represents the index in the palette that this LED is colored.  There are N/2 bytes in this portion
 

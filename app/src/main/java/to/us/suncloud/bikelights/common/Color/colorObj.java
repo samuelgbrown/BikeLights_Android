@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
+//import to.us.suncloud.bluetoothproto.BluetoothProto.BluetoothMessage.BikeWheelAnim;
 
 public class colorObj implements Serializable {
     private static final float MAX_VAL = 255;
@@ -30,11 +30,18 @@ public class colorObj implements Serializable {
         w = (byte) list[3];
     }
 
-    colorObj(colorObj c) {
+    public colorObj(colorObj c) {
         r = (byte) c.getR();
         g = (byte) c.getG();
         b = (byte) c.getB();
         w = (byte) c.getW();
+    }
+
+    public colorObj (List<Byte> list) {
+        r = list.get(0);
+        g = list.get(1);
+        b = list.get(2);
+        w = list.get(3);
     }
 
     public colorObj scale(float brightnessScale) {

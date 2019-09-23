@@ -4,7 +4,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.view.ViewGroup;
 
@@ -25,15 +24,15 @@ public class ImageDefinePagerAdapter extends FragmentStatePagerAdapter {
     public ImageDefinePagerAdapter(Bike_Wheel_Animation bikeWheelAnimation, FragmentManager fm) { //, ImageDefineInterface listener) {
         super(fm);
 //        this.palette = bikeWheelAnimation.getPalette();
-//        this.imageMeta = bikeWheelAnimation.getImageMeta();
+//        this.imageMeta = bikeWheelAnimation.getImageMainMeta();
 
         this.bikeWheelAnimation = bikeWheelAnimation.clone();
 //        this.listener = listener;
     }
 
-    public void setImageMeta(int imageMetaType) {
+    public void setImageMainMeta(int imageMetaType) {
         // Update the ImageMeta_ type, which will affect which tabs get shown
-        this.bikeWheelAnimation.setImageMetaType(imageMetaType);
+        this.bikeWheelAnimation.setImageMainMetaType(imageMetaType);
 
         // Modify the main fragment's attribute type (The idle type should not have a parameter)
         if (fragmentMain != null) {
@@ -85,13 +84,13 @@ public class ImageDefinePagerAdapter extends FragmentStatePagerAdapter {
     public Bike_Wheel_Animation putImages(Bike_Wheel_Animation bikeWheelAnimation_toModify) {
         // Add the images to the new bikeWheelAnimation
         bikeWheelAnimation_toModify.setImageMain(fragmentMain.getImage());
-        if (bikeWheelAnimation.getImageMeta().supportsIdle()) {
+        if (bikeWheelAnimation.getImageMainMeta().supportsIdle()) {
             // If the current bikeWheelAnimation (which represents what the GUI is currently set up to handle) allows an idle, then put it into this new Bike_Wheel_Animation
             bikeWheelAnimation_toModify.setImageIdle(fragmentIdle.getImage());
         }
 
         // Add the image meta data
-        bikeWheelAnimation_toModify.setImageMeta(fragmentMain.getImageMeta());
+        bikeWheelAnimation_toModify.setImageMainMeta(fragmentMain.getImageMeta());
 
         return bikeWheelAnimation_toModify;
     }
@@ -138,7 +137,7 @@ public class ImageDefinePagerAdapter extends FragmentStatePagerAdapter {
         }
 
         if (object.equals(fragmentIdle)) {
-            if (bikeWheelAnimation.getImageMeta().supportsIdle()) {
+            if (bikeWheelAnimation.getImageMainMeta().supportsIdle()) {
                 return 1;
             } else {
                 return POSITION_NONE;
@@ -155,7 +154,7 @@ public class ImageDefinePagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
-        if (bikeWheelAnimation.getImageMeta().supportsIdle()) {
+        if (bikeWheelAnimation.getImageMainMeta().supportsIdle()) {
             // Supports both main and idle
             return tabTitles.length;
         } else {

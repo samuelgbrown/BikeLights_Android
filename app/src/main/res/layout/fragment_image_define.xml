@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    tools:context=".common.WheelView.ImageDefineFragment">
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/ImageEditContainer"
@@ -15,6 +16,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageViewModContainer">
+
 
         <ImageView
             android:id="@+id/image_undo"
@@ -85,13 +87,13 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/wheelView"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/image_meta_spinner">
 
 
             <android.support.constraint.ConstraintLayout
                 android:id="@+id/constrot_container"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_width="217dp"
+                android:layout_height="83dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
                 android:visibility="visible"
@@ -99,25 +101,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
-
-                <TextView
-                    android:id="@+id/attribute_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="22dp"
-                    android:text="Rotation Speed"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <SeekBar
-                    android:id="@+id/attribute_seekbar"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:max="@integer/double_max_speed"
-                    android:progress="0"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/attribute_text" />
 
                 <ImageView
                     android:id="@+id/attribute_right"
@@ -144,6 +127,25 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/attribute_seekbar" />
 
+                <SeekBar
+                    android:id="@+id/attribute_seekbar"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:max="@integer/double_max_speed"
+                    android:progress="0"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/attribute_text" />
+
+                <TextView
+                    android:id="@+id/attribute_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="22dp"
+                    android:text="Rotation Speed"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
                 <TextView
                     android:id="@+id/attribute_val"
                     android:layout_width="wrap_content"
@@ -160,6 +162,19 @@
 
         </android.support.constraint.ConstraintLayout>
 
+        <Spinner
+            android:id="@+id/image_meta_spinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:entries="@array/image_main_meta_types"
+            android:textAlignment="center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <ImageView
             android:id="@+id/wheelView"
             android:layout_width="@dimen/wheel_view_height"
@@ -172,7 +187,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/imageTypeContainer"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/image_meta_spinner" />
 
     </android.support.constraint.ConstraintLayout>
 </android.support.constraint.ConstraintLayout>

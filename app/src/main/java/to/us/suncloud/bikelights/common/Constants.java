@@ -32,6 +32,8 @@ public class Constants {
 
     // Types of ImageMeta_'s
     public static final int IMAGE_IDLE = 16;
-    public static final int IMAGE_CONSTROT = 17;
-    public static final int IMAGE_SPINNER = 18;
+    public static final int IMAGE_CONSTROT_ = 17;
+    public static final int IMAGE_CONSTROT_GREL = 18;
+    public static final int IMAGE_CONSTROT_WREL = 19;
+    public static final int IMAGE_SPINNER = 20;
 }
