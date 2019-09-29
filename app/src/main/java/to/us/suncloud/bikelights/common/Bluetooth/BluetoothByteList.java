@@ -131,7 +131,7 @@ public class BluetoothByteList {
         return rawByteList;
     }
 
-    public List<Byte> getProcessedByteList() {
+    public byte[] getProcessedByteList() {
         // Do the processing on this byte list, adding in headers every 64 bytes as needed.
         // Returns a single 64-byte message, with header included. Subsequent calls will return each following message
         // TODO: Initialize a full write out with startWriting(), which will return the total number of 64-byte blocks to be sent, and each call to this function will return the next block, which the calling function can send once we hear back from the Arduino that it's ready
@@ -153,6 +153,7 @@ public class BluetoothByteList {
             }
         }
 
+        // TODO: Unbox all of the Bytes in the List into a byte[]
         return outList;
     }
 

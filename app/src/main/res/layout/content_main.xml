@@ -8,6 +8,82 @@
     tools:context=".MainActivity"
     tools:showIn="@layout/activity_main">
 
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/bluetoothBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/bluetoothStatusBackground"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+
+        <ImageButton
+            android:id="@+id/bluetoothDownload"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:tint="#474747"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/bluetoothUpload"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@android:drawable/stat_sys_download" />
+
+        <ImageButton
+            android:id="@+id/bluetoothUpload"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:tint="#474747"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@android:drawable/stat_sys_upload" />
+
+        <ImageView
+            android:id="@+id/bluetoothImageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bluetooth" />
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/bluetoothStatusTextBorder"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/bluetoothDownload"
+            app:layout_constraintStart_toEndOf="@+id/bluetoothImageView"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/bluetoothStatusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginBottom="4dp"
+                android:text="@string/bt_status_disconnected"
+                android:textSize="18sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </android.support.constraint.ConstraintLayout>
+
+    </android.support.constraint.ConstraintLayout>
+
     <ImageView
         android:id="@+id/wheelSelectView"
         android:layout_width="0dp"
@@ -18,7 +94,7 @@
         android:cropToPadding="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider9"
         app:srcCompat="@drawable/bicycle" />
 
     <View
@@ -178,4 +254,18 @@
         app:layout_constraintBottom_toTopOf="@+id/divider"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintStart_toStartOf="@+id/wheelSelectView" />
+
+    <View
+        android:id="@+id/divider9"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="?android:attr/listDivider"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bluetoothBar" />
+
 </android.support.constraint.ConstraintLayout>

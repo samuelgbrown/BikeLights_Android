@@ -19,6 +19,9 @@ public class Constants {
     public static final int MESSAGE_DISCONNECTED = 7;
     public static final int MESSAGE_CONNECT_FAILED = 8;
 
+    // Message for general Bluetooth management
+    public static final int MESSAGE_BLUETOOTH_STATE_CHANGE = 21; // Remove the current device assigned to this wheel, and add a new one
+
     // Types of actions to take when altering a device's state
     public static final int ACTION_DISCONNECT = 9;
     public static final int ACTION_SWITCH = 10; // Switch which wheel this device is assigned to

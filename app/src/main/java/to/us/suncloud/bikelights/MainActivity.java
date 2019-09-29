@@ -1,10 +1,16 @@
 package to.us.suncloud.bikelights;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Message;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -14,12 +20,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 
 import to.us.suncloud.bikelights.common.BWA_Manager.SavedBWAFragment;
+import to.us.suncloud.bikelights.common.Bluetooth.BluetoothByteList;
 import to.us.suncloud.bikelights.common.Bluetooth.BluetoothMasterHandler;
 import to.us.suncloud.bikelights.common.Color.Bike_Wheel_Animation;
 import to.us.suncloud.bikelights.common.Color.SavedBWA;
@@ -48,6 +57,10 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
     private Bike_Wheel_Animation bwa_rear; // List of Color_'s that are a part of the rear wheel
     private Bike_Wheel_Animation bwa_front; // List of Color_'s that are a part of the front wheel
 
+    // TODO: Keep a copy of the most up to date Arduino versions of the BWA's, as well, to check if the two devices are synch'd
+    private Bike_Wheel_Animation arduino_last_bwa_rear; // List of Color_'s that are a part of the rear wheel
+    private Bike_Wheel_Animation arduino_last_bwa_front; // List of Color_'s that are a part of the front wheel
+
     private View wheelSelectView; // The image view that draws the bike on screen
     private wheelSelectDrawable wheelDrawable; // The drawable object that controls the colors of the wheels
     private FragmentManager fm = getSupportFragmentManager(); // Get the fragment manager, to be able to display the bluetooth dialog
@@ -55,6 +68,10 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
     boolean mCurrentBluetoothStatus = false; // Is the bluetooth adapter on?
     private Button rearWheelButton; // The button that starts the rear wheel's activity
     private Button frontWheelButton; // The button that starts the front wheel's activity
+    private ConstraintLayout bluetoothStatusTextBorder; // Border outline of the bluetooth status, indicates the status of the bluetooth connection
+    private ImageButton bluetoothUpload; // Button to upload the BWA to the Arduino
+    private ImageButton bluetoothDownload; // Button to download the BWA from the Arduino
+    private TextView bluetoothStatusText; // Status text view to indicate the status of the bluetooth connection and BWAs
 
     private Switch rearPowerSwitch;
     private Switch frontPowerSwitch;
@@ -159,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         checkBluetooth(true);
 
         // Create a ConnectionManager (manages connecting and managing of bluetooth connections), and register this Activity as a Handler (receives communication directly from the Bluetooth devices)
+        // TODO: If there are any Arduino connections, automatically download the BWA's (in the background), and save them to the Arduino BWA's
         // If savedInstanceState is not null, if it contains the key we want, and if the value of that key is not null...
         if (!(savedInstanceState == null) && savedInstanceState.containsKey(CONNECTION_MANAGER) && !(savedInstanceState.getSerializable(CONNECTION_MANAGER) == null)) {
             // ...then a Connection Manager was found, then save it locally
@@ -168,7 +186,62 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
             mManager = new ConnectionManager(this);
         }
 
+        // Register this activity to the connection manager
         mManager.registerHandler(this);
+
+        // Register the Connection Manager's broadcast receiver via this Activity
+        registerReceiver(mManager.getBroadcastReceiver(), new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+
+        // Initialize the bluetooth bar at the top
+        bluetoothStatusText = findViewById(R.id.bluetoothStatusText);
+        bluetoothStatusTextBorder = findViewById(R.id.bluetoothStatusTextBorder);
+        bluetoothDownload = findViewById(R.id.bluetoothDownload); // TODO: May actually not need this?  May just happen automatically on connection...
+        bluetoothUpload = findViewById(R.id.bluetoothUpload);
+
+        updateBluetoothStatus(); // Update the bluetooth GUI
+
+        // Set the functions of the upload and download buttons
+        bluetoothDownload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // See if we even should be getting the BWAs from the wheels.  If there is anything interesting on the Android app right now, check if the user really wants to go through with the download
+                if (!(bwa_front.isEmpty() && bwa_rear.isEmpty())) {
+                    // If they are not both blank, then we should confirm with the user that they want to overwrite the current BWA
+
+                    // Build the alert dialog
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+                    builder.setTitle(getResources().getString(R.string.dialog_btc_title))
+                            .setMessage(getResources().getString(R.string.dialog_btc_message_download))
+                            .setPositiveButton(getResources().getString(R.string.dialog_btc_overwrite), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    bluetoothDownloadBWAs();
+                                }
+                            })
+                            .setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // Do nothing?
+                                }
+                            });
+
+                    // Display the dialog
+                    builder.create();
+
+                } else {
+                    // If they are both blank, then go ahead and load the Arduino BWAs anyway
+                    bluetoothDownloadBWAs();
+                }
+            }
+        });
+
+        bluetoothUpload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Send the Android BWAs to the Arduino
+                bluetoothUploadBWAs();
+            }
+        });
 
         // Clear out memory from the ColorPickerPreferenceManager
         ColorPickerPreferenceManager.getInstance(this).clearSavedAllData();
@@ -177,6 +250,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         File colorFile = new File(getFilesDir(), ColorPickerDialog.SAVED_COLORS);
         colorFile.delete();
     }
+
 
     private void startWheelViewActivity(Bike_Wheel_Animation curBWA, int wheelLocation) {
         startWheelViewActivity(curBWA, wheelLocation, false);
@@ -190,6 +264,86 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         startActivityForResult(intent, REQUEST_WHEEL_ACTIVITY); // Start the new activity
     }
 
+    private void updateBluetoothStatus() {
+        // TODO: Probably need to change this on bluetooth status change, as well?
+        boolean frontSynched = bwa_front.equals(arduino_last_bwa_front);
+        boolean readSynched = bwa_rear.equals(arduino_last_bwa_rear);
+
+        int stringID = R.string.bt_status_disconnected;
+        int colorID = R.color.red;
+        int uploadVis = View.GONE;
+        int downloadVis = View.GONE; // TODO: May not actually need...
+
+        // if (CONNECTED) { // TODO
+        if (frontSynched && readSynched) {
+            stringID = R.string.bt_status_synched;
+            colorID = R.color.green;
+
+            uploadVis = View.GONE;
+            downloadVis = View.GONE;
+            // Fully synched
+        } else if (frontSynched || readSynched) {
+            // Partially synched
+            stringID = R.string.bt_status_part_synched;
+            colorID = R.color.yellow;
+
+            uploadVis = View.VISIBLE;
+            downloadVis = View.VISIBLE;
+        } else {
+            // Ready to be uploaded
+            stringID = R.string.bt_status_ready_to_upload;
+            colorID = R.color.yellow;
+
+            uploadVis = View.VISIBLE;
+            downloadVis = View.VISIBLE;
+        }
+        // }
+
+        // Set the string and background color for the status indicator
+        bluetoothStatusText.setText(stringID);
+        bluetoothStatusTextBorder.setBackgroundColor(colorID); // TODO: Check if this works?
+
+        // Set the upload and download button visibilities
+        bluetoothUpload.setVisibility(uploadVis);
+        bluetoothDownload.setVisibility(downloadVis);
+    }
+
+    private void bluetoothDownloadBWAs() {
+        // TODO: Download the BWAs from both BWAs (perhaps, just do one at a time (i.e. can select individual wheels)?
+        // TODO: Do this in a background thread
+    }
+
+    private void bluetoothUploadBWAs() {
+        // TODO: Upload the BWAs from both BWAs (perhaps, just do one at a time (i.e. can select individual wheels)?
+        // TODO: Do this in a background thread
+    }
+
+    public void setBWA(Bike_Wheel_Animation bwa, int wheelLocation, boolean alsoSetArduinoBWA) {
+        // Change the bike wheel animation of the chosen wheel.  We may need to also set the arduino BWAs if we are getting this straight from the bluetooth connection
+        switch (wheelLocation) {
+            case Constants.ID_FRONT:
+                bwa_front = bwa;
+                break;
+            case Constants.ID_REAR:
+                bwa_rear = bwa; // TODO: Need to clone...?
+                break;
+            default:
+                // Uh-oh...
+                Log.e(TAG, "Found unknown wheel location to save BWA");
+        }
+
+        if (alsoSetArduinoBWA) {
+            switch (wheelLocation) {
+                case Constants.ID_FRONT:
+                    arduino_last_bwa_front = bwa;
+                    break;
+                case Constants.ID_REAR:
+                    arduino_last_bwa_rear = bwa; // TODO: Need to clone...?
+                    break;
+            }
+        }
+    }
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putSerializable(COLOR_LIST_R, bwa_rear);
@@ -197,9 +351,13 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         super.onSaveInstanceState(outState);
     }
 
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        // Unregister the broadcast receiver
+        unregisterReceiver(mManager.getBroadcastReceiver());
 
         // Unregister from the ConnectionManager
         mManager.unregisterHandler(this);
@@ -244,17 +402,18 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                     Bundle b = data.getExtras();
                     if (b.containsKey(WHEEL_LOCATION) && b.containsKey(BIKE_WHEEL_ANIMATION)) {
                         // The activity successfully returned the color list associated with the wheel given by WHEEL_LOCATION
-                        switch (b.getInt(WHEEL_LOCATION)) {
-                            case Constants.ID_REAR:
-                                bwa_rear = (Bike_Wheel_Animation) b.getSerializable(BIKE_WHEEL_ANIMATION); // Add the included Bike_Wheel_Animation to the rear wheel
-                                break;
-                            case Constants.ID_FRONT:
-                                bwa_front = (Bike_Wheel_Animation) b.getSerializable(BIKE_WHEEL_ANIMATION); // Add the included Bike_Wheel_Animation to the front wheel
-                                break;
-                            default:
-                                // Uh-oh...
-                                Log.e(TAG, "Wheel Activity returned unknown wheel location");
-                        }
+                        setBWA((Bike_Wheel_Animation) b.getSerializable(BIKE_WHEEL_ANIMATION), b.getInt(WHEEL_LOCATION), false);
+//                        switch (b.getInt(WHEEL_LOCATION)) {
+//                            case Constants.ID_REAR:
+//                                bwa_rear = (Bike_Wheel_Animation) b.getSerializable(BIKE_WHEEL_ANIMATION); // Add the included Bike_Wheel_Animation to the rear wheel
+//                                break;
+//                            case Constants.ID_FRONT:
+//                                bwa_front = (Bike_Wheel_Animation) b.getSerializable(BIKE_WHEEL_ANIMATION); // Add the included Bike_Wheel_Animation to the front wheel
+//                                break;
+//                            default:
+//                                // Uh-oh...
+//                                Log.e(TAG, "Wheel Activity returned unknown wheel location");
+//                        }
                     }
                 }
 
@@ -314,6 +473,9 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
         // Send a toast message that a device has been either connected or disconnected
         sendConnectionToast(connected, Constants.ID_REAR);
+
+        // TODO: Read the BWA from the newly connected device into the Arduino BWA variable, or get rid of the old saved BWA? Also, update the bluetooth status text.
+
     }
 
     public void onFrontConnectionStateChange(boolean connected) {
@@ -323,6 +485,28 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
         // Send a toast message that a device has been either connected or disconnected
         sendConnectionToast(connected, Constants.ID_FRONT);
+
+        // TODO: Read the BWA from the newly connected device into the Arduino BWA variable, or get rid of the old saved BWA? Also, update the bluetooth status text
+    }
+
+    private void getBWAFromDevice(int wheeolLoc) {
+        // TODO: Do this all in a new thread!
+
+        // TODO: First, check if the device is connected
+        if (mCurrentBluetoothStatus && mManager.isWheelConnected(wheeolLoc)) {
+            // If the wheel is connected, then send a message to the device to request its BWA
+
+
+            // Finally, read the BWA that it sends (with timeout)
+        }
+    }
+
+    private void sendBTRequest(BluetoothByteList.ContentType content, int wheelLoc) {
+        // TODO: Maybe another class can be responsible for this...?  Connection manager should be lower level, and BluetoothByteList is just the byte list itself...need some kind of higher level manager?
+        // Create a raw byte list for this content as a request
+        BluetoothByteList requestByteList = new BluetoothByteList(content, true);
+
+
     }
 
     public void onRearPowerStateChange(boolean powered) {
@@ -464,6 +648,8 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                         break;
                 }
                 break;
+            case Constants.MESSAGE_BLUETOOTH_STATE_CHANGE:
+                checkBluetooth(false); // If the bluetooth state has changed, keep track of it
         }
     }
 }

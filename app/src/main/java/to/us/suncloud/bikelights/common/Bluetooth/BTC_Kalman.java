@@ -1,12 +1,11 @@
 package to.us.suncloud.bikelights.common.Bluetooth;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import to.us.suncloud.bikelights.common.ByteMath;
 
-public class Kalman {
+public class BTC_Kalman {
     private int n_obs = 2;
     private int n_sta = 3;
 
@@ -14,9 +13,7 @@ public class Kalman {
     private List<List<Float>> R; // n_obs x n_obs
     private List<List<Float>> P; // n_sta x n_sta
 
-    public Kalman() {}
-
-    public Kalman(int n_obs, int n_sta, float Q, List<List<Float>> R, List<List<Float>> P) {
+    public BTC_Kalman(int n_obs, int n_sta, float Q, List<List<Float>> R, List<List<Float>> P) {
         this.n_obs = n_obs;
         this.n_sta = n_sta;
         this.Q = Q;
@@ -24,12 +21,32 @@ public class Kalman {
         this.P = P;
     }
 
+    public int getN_obs() {
+        return n_obs;
+    }
+
+    public int getN_sta() {
+        return n_sta;
+    }
+
+    public float getQ() {
+        return Q;
+    }
+
+    public List<List<Float>> getR() {
+        return R;
+    }
+
+    public List<List<Float>> getP() {
+        return P;
+    }
+
     public BluetoothByteList toByteList() {
-        // Convert this Kalman object to a byte list
+        // Convert this BTC_Kalman object to a byte list
         // Create the byte list that will eventually be sent
         BluetoothByteList rawByteList = new BluetoothByteList(BluetoothByteList.ContentType.Kalman, false);
 
-        // First, send the Kalman meta data (number of observed and state variables)
+        // First, send the BTC_Kalman meta data (number of observed and state variables)
         byte numVarsByte = 0;
         numVarsByte = ByteMath.putDataToByte(numVarsByte, (byte) n_obs, 4, 4); // TODO: Check with online compiler, can we just convert an int to a byte?  Probably because it's below 127, but still may want to check...
         numVarsByte = ByteMath.putDataToByte(numVarsByte, (byte) n_sta, 4, 0);
@@ -56,14 +73,17 @@ public class Kalman {
                 rawByteList.addBytes(ByteMath.putFloatToByteArray(thisPRow.get(col)));
             }
         }
+
+        // Return the byte list so that it can be set
+        return rawByteList;
     }
 
-    static public Kalman fromByteList(BluetoothByteList rawByteList) {
-        // Extract a Kalman object from the incoming raw byte list
+    static public BTC_Kalman fromByteList(BluetoothByteList rawByteList) {
+        // Extract a BTC_Kalman object from the incoming raw byte list
 
         rawByteList.startReading(); // Set the pointer to the beginning of the byte list
 
-        // First, get the Kalman meta data (number of observed and state variables
+        // First, get the BTC_Kalman meta data (number of observed and state variables
         byte numVarsByte = rawByteList.getByte(); // Get the first byte, which contains both n_obs and n_sta
         int n_obs = ByteMath.getNIntFromByte(numVarsByte, 4, 4);
         int n_sta = ByteMath.getNIntFromByte(numVarsByte, 4, 0);
@@ -94,7 +114,7 @@ public class Kalman {
             P.add(thisPRow); // Add the newly populated row to the matrix R
         }
 
-        // Finally, create the Kalman object, and return it
-        return new Kalman(n_obs, n_sta, Q, R, P);
+        // Finally, create the BTC_Kalman object, and return it
+        return new BTC_Kalman(n_obs, n_sta, Q, R, P);
     }
 }

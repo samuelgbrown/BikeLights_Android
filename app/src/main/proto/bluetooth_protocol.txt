@@ -111,7 +111,7 @@ BF (4float) - Brightness factor, less than or equal to 1, and greater than 0.
 C == 3 : Storage
 - b_RE1 b_RE2 b_RE3 b_RE4 | b_TO1 b_TO2 b_TO3 b_TO4 -
 RE (4ulong) - The amount of remaining RAM
-TO (4ulong) - The amoutn of total RAM
+TO (4ulong) - The amount of total RAM
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # #

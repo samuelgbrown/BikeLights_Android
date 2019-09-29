@@ -102,6 +102,16 @@
     <string name="apply">Apply</string>
     <string name="delete">Delete</string>
 
+    <string name="bt_status_disconnected">Disconnected</string>
+    <string name="bt_status_synched">Synchronized</string>
+    <string name="bt_status_part_synched">Partially Synchronized</string>
+    <string name="bt_status_ready_to_upload">Ready To Upload</string>
+
+    <string name="dialog_btc_title">Overwrite Data?</string>
+    <string name="dialog_btc_message_download">Would you like to overwrite the current data with the pattern from the Arduino?</string>
+    <string name="dialog_btc_message_upload">Would you like to overwrite the Arduino\'s data with the current pattern?</string>
+    <string name="dialog_btc_overwrite">Overwrite</string>
+
     <string name="image_desc_spinner">Image moves like a "Spinner" Hubcap</string>
     <string name="image_desc_constrot_grel">Image moves with a constant speed relative to the ground</string>
     <string name="image_desc_constrot_wrel">Image moves with a constant speed relative to the wheel</string>
