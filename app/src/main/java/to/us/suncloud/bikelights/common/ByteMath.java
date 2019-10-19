@@ -66,16 +66,20 @@ public class ByteMath {
     static public long getLongIntFromByteArray(List<Byte> byteArray) {
         // Transfer the LOWER 4 BYTES to a new 8-byte array, and fill the upper 4 bytes with 0's
         byte[] b = new byte[8];
-        for (int i = 0;i < 4;i++) {
+        for (int i = 0; i < 4; i++) {
             b[i] = byteArray.get(i);
         }
 
         // Annoying and stupid and hacky...
-        for (int i = 0;i < 4;i++) {
+        for (int i = 0; i < 4; i++) {
             b[i + 4] = 0;
         }
 
-        return  ByteBuffer.wrap(b).order(ByteOrder.LITTLE_ENDIAN).getLong() & 0xffffffffL; // Return the lower 8 bytes of the resulting long
+        return ByteBuffer.wrap(b).order(ByteOrder.LITTLE_ENDIAN).getLong() & 0xffffffffL; // Return the lower 8 bytes of the resulting long
+    }
+
+    static public float getFloatFromByteArray(List<Byte> byteArray) {
+        return Float.intBitsToFloat(Integer.reverse((int) getLongIntFromByteArray(byteArray)));
     }
 
     // Test function (do not use!)

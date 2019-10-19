@@ -6,6 +6,9 @@ import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
@@ -15,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.List;
 import java.util.UUID;
 
 import to.us.suncloud.bikelights.common.Constants;
@@ -30,6 +34,44 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
 
     private ConnectionManagerThread mRearManagerThread = null;
     private ConnectionManagerThread mFrontManagerThread = null;
+
+    private BluetoothDevice mFrontStoredDevice = null; // Store devices, if needed, to attempt reconnection should anything happen to the connection unintentionally
+    private BluetoothDevice mRearStoredDevice = null;
+
+    // TODO: Use the broadcast receiver registered in the Main Activity here:  If bluetooth gets turned off, .close() all of the threads
+
+    private BroadcastReceiver br = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            // Check if bluetooth has turned on or off
+            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                // Get the new state
+                int newState = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_CONNECTED);
+
+                switch (newState) {
+                    case BluetoothAdapter.STATE_ON:
+                        // If the bluetooth adapter has just turned on, then try reconnecting to any devices that were unintentionally disconnected
+                        // TODO: Get all methods of unintentional disconnection?
+
+                        // Let the Main Activity know that the bluetooth state has changed
+                        sendBTChangeMessage();
+
+                        // Attempt to reconnect to devices
+                        attemptReconnectToStoredDevices();
+                        break;
+                    case BluetoothAdapter.STATE_OFF:
+                        // Let the Main Activity know that the bluetooth state has changed
+                        sendBTChangeMessage();
+
+                        // Because this is an unintentional disconnect, store the bluetooth devices to be reconnected to later
+                        storeDevicesAndCloseManagedThreads();
+                        break;
+                }
+            }
+        }
+    };
 
     public ConnectionManager(Activity mainActivity) {
         context = (FragmentActivity) mainActivity;
@@ -50,17 +92,47 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
         mMasterHandler.unregisterHandler(newHandler);
     }
 
-    public void connectToDevice(BluetoothDevice device, int id) {
+    public BroadcastReceiver getBroadcastReceiver() {
+        // Return the broadcast receiver, so it can be registered and unregistered by the Activity.
+        return br;
+    }
+
+    public boolean sendBytesToDevice(BluetoothByteList rawByteList, int wheelLoc) {
+        boolean status = true; // Start out assuming that the data transfer will go well...
+
+        // First, process the byte list
+        List<Byte> processedByteList = rawByteList.getProcessedByteList();
+
+        // Then, send the processed byte list to the device indicated
+        try {
+            switch (wheelLoc) {
+                case Constants.ID_FRONT:
+                    mFrontManagerThread.write(processedByteList);
+                    break;
+                case Constants.ID_REAR:
+
+                    break;
+            }
+        } catch (Exception e) {
+            // Uh-oh...
+            Log.e(TAG, "Data transfer to device failed.");
+            status = false;
+        }
+
+        return status;
+    }
+
+    public void connectToDevice(BluetoothDevice device, int wheelLoc) {
         // If this device is already connected to this wheel, then send a toast to the user telling them how stupid they are
-        if (deviceConnectionID(device) == id) {
-            sendToast("Device already connected to this wheel.", id);
+        if (deviceConnectionID(device) == wheelLoc) {
+            sendToast("Device already connected to this wheel.", wheelLoc);
             return;
         }
 
         // Check if there is already a managed device.  If so, ask the user if they want to connect anyway (disconnect from the old device)
-        if ((id == Constants.ID_FRONT && mFrontManagerThread != null) || (id == Constants.ID_REAR && mRearManagerThread != null)) {
+        if ((wheelLoc == Constants.ID_FRONT && mFrontManagerThread != null) || (wheelLoc == Constants.ID_REAR && mRearManagerThread != null)) {
             // If the user is trying to connect a wheel that is already connected to a device, ask them to confirm
-            ReplaceDeviceDialog dialog = ReplaceDeviceDialog.newInstance(this, device, id);
+            ReplaceDeviceDialog dialog = ReplaceDeviceDialog.newInstance(this, device, wheelLoc);
             FragmentManager sfm = context.getFragmentManager();
             dialog.show(sfm, "Replace device");
 
@@ -71,7 +143,7 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
         // If this device is currently connected to the opposite wheel, then simply swap manager threads
         if (deviceConnectionID(device) != Constants.ID_NONE) {
             // The device has already been confirmed as not being connected to its target thread (first if-block of this function), so a switch is all that is needed
-            switch (id) {
+            switch (wheelLoc) {
                 case Constants.ID_FRONT:
                     // Switch to the front manager, and remove from the rear
                     mFrontManagerThread = mRearManagerThread;
@@ -92,7 +164,7 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
             mConnectThread.close();
         }
 
-        mConnectThread = new BluetoothConnectThread(device, id);
+        mConnectThread = new BluetoothConnectThread(device, wheelLoc);
     }
 
     public int deviceConnectionID(BluetoothDevice device) {
@@ -165,6 +237,13 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
         // Simple function interface to send a disconnection message through the Handler
         Message connectMsg = mMasterHandler.obtainMessage(
                 Constants.MESSAGE_CONNECTED, 0, id, device);
+        connectMsg.sendToTarget();
+    }
+
+    private void sendBTChangeMessage() {
+        // Simple function interface to send a disconnection message through the Handler
+        Message connectMsg = mMasterHandler.obtainMessage(
+                Constants.MESSAGE_BLUETOOTH_STATE_CHANGE);
         connectMsg.sendToTarget();
     }
 
@@ -387,6 +466,47 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
 
         BluetoothDevice getDevice() {
             return mDevice;
+        }
+    }
+
+    private void storeDevicesAndCloseManagedThreads() {
+        // Store both of the managed bluetooth devices, so that we can attempt to reconnect to them later
+
+        if (mFrontManagerThread != null) {
+            // If there is a front wheel bluetooth device
+            mFrontStoredDevice = mFrontManagerThread.getDevice();
+            mFrontManagerThread.close();
+        }
+
+        if (mRearManagerThread != null) {
+            // If there is a front wheel bluetooth device
+            mRearStoredDevice = mRearManagerThread.getDevice();
+            mRearManagerThread.close();
+        }
+    }
+
+    private void attemptReconnectToStoredDevices() {
+        // See if there are any devices that were stored (due to an unintentional bluetooth disconnection), and try to connect to them again
+
+        if (mFrontStoredDevice != null) {
+            // Attempt to reconnect to the device once
+            connectToDevice(mFrontStoredDevice, Constants.ID_FRONT);
+            mFrontStoredDevice = null;
+        }
+
+        if (mRearStoredDevice != null) {
+            // Attempt to reconnect to the device once
+            connectToDevice(mRearStoredDevice, Constants.ID_REAR);
+            mRearStoredDevice = null;
+        }
+    }
+
+    public boolean isWheelConnected(int wheelLoc) {
+        switch (wheelLoc) {
+            case Constants.ID_FRONT:
+                return mFrontManagerThread != null;
+            case Constants.ID_REAR:
+                return mRearManagerThread != null;
         }
     }
 }

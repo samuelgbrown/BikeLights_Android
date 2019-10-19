@@ -316,6 +316,10 @@ public class Bike_Wheel_Animation implements Serializable {
         }
     }
 
+    public boolean isEmpty() {
+        return this.equals(new Bike_Wheel_Animation(sizeImage()));
+    }
+
     // New byte-level manipulation code
     public BluetoothByteList toByteList() {
         // Create a byte-list (ready to be sent to the Arduino, minus headers) from this Bike_Wheel_Anim

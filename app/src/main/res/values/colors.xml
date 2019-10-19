@@ -10,9 +10,11 @@
     <color name="wheelOn">#00c853</color>
     <color name="wheelCross">#304ffe</color>
     <color name="androidBackground">#FAFAFA</color>
+    <color name="bluetoothStatusBackground">#E1E1E1</color>
     <color name="selected">#90caf9</color>
     <color name="red">#ffc8c8</color>
-    <color name="green">#c8ffc8</color>
+    <color name="yellow">#FCFFC8</color>
+    <color name="green">#C8FFC8</color>
     <color name="blue">#c8c8ff</color>
     <color name="white">#FFFFFF</color>
 </resources>

@@ -95,8 +95,8 @@ C == 1 : Kalman
 NO (4uint) - Number of observation variables (2 - position, velocity)
 ST (4uint) - Number of state variables (3 - position, velocity, acceleration)
 Q (4float) - Q, as a scalar
-R (4float[]) - NO x NO matrix, intepretted as columns first, then rows
-P (4float[]) - ST x ST matrix, intepretted as columns first, then rows
+R (4float[]) - NO x NO matrix, interpreted as columns first, then rows (i.e. send each row individually, in column order)
+P (4float[]) - ST x ST matrix, interpreted as columns first, then rows (i.e. send each row individually, in column order)
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -111,7 +111,7 @@ BF (4float) - Brightness factor, less than or equal to 1, and greater than 0.
 C == 3 : Storage
 - b_RE1 b_RE2 b_RE3 b_RE4 | b_TO1 b_TO2 b_TO3 b_TO4 -
 RE (4ulong) - The amount of remaining RAM
-TO (4ulong) - The amoutn of total RAM
+TO (4ulong) - The amount of total RAM
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
