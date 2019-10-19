@@ -22,7 +22,7 @@ public class ImagePatternRecyclerAdapter extends RecyclerView.Adapter<ImagePatte
     private ArrayList<Boolean> isSelectedList;
     private ArrayList<Boolean> memory_IsSelectedList; // Used to calculated differences in data
 
-    private ArrayList<Color_> colorList; // TODO: Change this to a Bike_Wheel_Animation?  (Along with changing the colorAnimatorSets List to be numColors long instead of sizeImage?)
+    private ArrayList<Color_> colorList; // TODO: Change this to a Bike_Wheel_Animation?
     private ArrayList<Color_> memory_ColorList;
 
     private List<AnimatorSet> colorAnimatorSets; // The AnimatorSets used to animate each of the preview Color_'s in palette
@@ -155,7 +155,8 @@ public class ImagePatternRecyclerAdapter extends RecyclerView.Adapter<ImagePatte
     public void setColorList(Bike_Wheel_Animation newColorList) {
         // Update the palette
         colorList = new ArrayList<>(newColorList.sizeImage());
-        colorAnimatorSets = new ArrayList<>(Collections.nCopies(newColorList.sizeImage(), new AnimatorSet()));
+//        colorAnimatorSets = new ArrayList<>(Collections.nCopies(newColorList.sizeImage(), new AnimatorSet())); // TO_DO: Should this just be changed to be newColorList.numColors() (with no other modification)?
+        colorAnimatorSets = new ArrayList<>(Collections.nCopies(newColorList.numColors(), new AnimatorSet()));
 
         for (int i = 0;i < newColorList.sizeImage();i++) {
             colorList.add(newColorList.getP(newColorList.getIMain(i)));

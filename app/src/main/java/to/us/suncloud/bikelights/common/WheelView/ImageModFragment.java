@@ -151,8 +151,6 @@ public class ImageModFragment extends DialogFragment {
         return fragment;
     }
 
-    // TODO: Make another newInstance function that adds support for an "isIdle" parameter.  This will make the repeat switch and the space equally checkbox both invisible (requring equally spaced repeats, i.e. rotational symmetry)
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -732,12 +730,12 @@ public class ImageModFragment extends DialogFragment {
         }
 
         // Create a numLEDs size array out of the slice, depending on how it should be repeated.  Simultaneously generate the selected array, which should be selected for all colors in the pattern/slice
-        // TODO: If/when pattern is not properly rotated, fix it here. Probably need to add a round(numLEDs/4) offset?
+        // TO_DO: If/when pattern is not properly rotated, fix it here. Probably need to add a round(numLEDs/4) offset?
         ArrayList<Integer> newImage = new ArrayList<>(originalImage); // Initialize the newImage as the original image sent to this fragment in the beginning.  Overwrite it with the "processed" slice to produce the new image
 
         for (int repeatNum = 0; repeatNum < thisNumRepeats; repeatNum++) {
             // Go through each repeat of the slice
-            // TODO: Add error-checking for overlap?  Meh...
+            // TO_DO: Add error-checking for overlap?  Meh...
             int thisStartInd = ROTATION_OFFSET + centerPatternOffset + (int)((float)repeatNum * repeatSliceOffset) + getRotation(); // Where to start this pattern
             for (int sliceInd = 0; sliceInd < slice.size(); sliceInd++) {
                 // "Inlay" this repeat of the slice into the newImage
@@ -783,7 +781,7 @@ public class ImageModFragment extends DialogFragment {
 
         for (int repeatNum = 0; repeatNum < thisNumRepeats; repeatNum++) {
             // Go through each repeat of the slice
-            // TODO: Add error-checking for overlap?  Meh...
+            // TO_DO: Add error-checking for overlap?  Meh...
             int thisStartInd = ROTATION_OFFSET + centerPatternOffset + repeatNum * repeatSliceOffset + getRotation(); // Where to start this pattern
             for (int sliceInd = 0; sliceInd < slice.size(); sliceInd++) {
                 // "Inlay" this repeat of the slice into the isSelected list

@@ -365,7 +365,6 @@ public class ColorDefRecyclerAdapter extends ColorDefRecyclerView.Adapter<ColorD
         }
 
         private void saveColorEnvelopeToCurrentColor_(ColorEnvelope envelope, boolean convertToRGBW) {
-            // TODO: Clean this up, use a white value?
             int[] colorRGBW = new int[4];
 //                        int[] colorRGB = new int[3];
             System.arraycopy(envelope.getArgb(), 1, colorRGBW, 0, 3);
@@ -380,6 +379,7 @@ public class ColorDefRecyclerAdapter extends ColorDefRecyclerView.Adapter<ColorD
                 // Find the minimum white power in the RGB triple, and which LED it corresponds to
                 float[] whiteColorPowerRatioSorted = Arrays.copyOf(whiteColorPowerRatio, whiteColorPowerRatio.length);
                 Arrays.sort(whiteColorPowerRatioSorted);
+
                 float whiteColorPowerMinRatio = whiteColorPowerRatioSorted[0];
                 int whiteColorPowerMinIndex = findMinIndex(whiteColorPowerRatio);
                 int originalMinPower = colorRGBW[whiteColorPowerMinIndex];
@@ -962,7 +962,7 @@ public class ColorDefRecyclerAdapter extends ColorDefRecyclerView.Adapter<ColorD
     }
 
 //    public void clearUnusedColorPickerSettings(Bike_Wheel_Animation bikeWheelAnimation) {
-//        // TODO: This function will accept a bikeWheelAnimation and clear all ColorPickerSettings from this wheel that are not associated with it (Abandoned, because it's just a mess of trying to get the wheel location down to this level, and it's not really a big deal...)
+//        // TO_DO: This function will accept a bikeWheelAnimation and clear all ColorPickerSettings from this wheel that are not associated with it (Abandoned, because it's just a mess of trying to get the wheel location down to this level, and it's not really a big deal...)
 //
 //    }
 

@@ -98,7 +98,6 @@ public class ColorListRecyclerAdapter extends ObservedRecyclerView.Adapter<Color
                     notifyItemChanged(thisItem, SEL);
 
                     // Indicate the correct LED's in the wheel
-                    // TODO: Send this selection to the Activity, who will send it to the ImageDefineFragment
 //                    ledViewDrawable.setSelection(selectedItem);
                     listener.setSelected(selectedItem);
                 }
@@ -167,7 +166,7 @@ public class ColorListRecyclerAdapter extends ObservedRecyclerView.Adapter<Color
 //            palette.set(mColorInd, newColor);
 //
 //            updateData();
-////            notifyItemChanged(mColorInd); // TODO: Maybe this isn't needed?
+////            notifyItemChanged(mColorInd); // TO_DO: Maybe this isn't needed?
 //        }
 
         public void setColor_(Color_ color_New) {
@@ -248,7 +247,7 @@ public class ColorListRecyclerAdapter extends ObservedRecyclerView.Adapter<Color
 
                 vh.bind(position);
             }
-            // TODO: Probably don't need to do anything if it's a footer...right?
+            // TO_DO: Probably don't need to do anything if it's a footer...right?
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -281,7 +280,7 @@ public class ColorListRecyclerAdapter extends ObservedRecyclerView.Adapter<Color
 //        ledViewDrawable.setPalette(colorList);
         listener.setPalette(new ArrayList<>(colorList));
 
-        notifyDataSetChanged(); // TODO: A very broad stroke, but maybe needed?
+        notifyDataSetChanged(); // TO_DO: A very broad stroke, but maybe needed?
     }
 
     @Override

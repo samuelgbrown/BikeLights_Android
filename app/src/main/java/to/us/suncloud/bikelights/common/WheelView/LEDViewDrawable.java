@@ -223,7 +223,7 @@ public class LEDViewDrawable extends Drawable implements Serializable {
         }
 
         // Redraw
-//        invalidateSelf(); // TODO: Needed?
+//        invalidateSelf(); //
     }
 
     public void setSelection(ArrayList<Boolean> newSelection) {

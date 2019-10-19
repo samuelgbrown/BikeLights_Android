@@ -25,7 +25,6 @@ import java.util.List;
 /**
  * {@link RecyclerView.Adapter} that can display a {@link SavedBWA} and makes a call to the
  * specified {@link savedBWAListener}.
- * TODO: Replace the implementation with code for your data type.
  */
 public class SavedBWARecyclerViewAdapter extends ObservedRecyclerView.Adapter<SavedBWARecyclerViewAdapter.bindViewHolder> {
     private static final String SEL = "SEL";
@@ -126,8 +125,6 @@ public class SavedBWARecyclerViewAdapter extends ObservedRecyclerView.Adapter<Sa
             nameView = view.findViewById(R.id.name_bwa);
             remove = view.findViewById(R.id.remove_bwa);
             modify = view.findViewById(R.id.modify_bwa);
-
-            // TODO: Add a modification button (gear) to change the name of the BWA; use the bwa_bookmark AlertDialog that was used in WheelViewActivity
         }
 
         public void bind(final int position) {

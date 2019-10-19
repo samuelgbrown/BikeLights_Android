@@ -269,7 +269,7 @@ public class BluetoothFragment extends DialogFragment implements BluetoothMaster
         availableRecyclerView.setAdapter(availableAdapter);
         pairedRecyclerView.setAdapter(pairedAdapter);
 
-        // TODO: Remove?
+        // TO_DO: Remove?
         // Finally, set the empty text views to the recyclerviews (a custom subclassing to display a message to the user if there is nothing in the recyclerview dataset)
 //        availableRecyclerView.setEmptyView(getView().findViewById(R.id.textAvailable_empty));
 //        pairedRecyclerView.setEmptyView(getView().findViewById(R.id.textPaired_empty));

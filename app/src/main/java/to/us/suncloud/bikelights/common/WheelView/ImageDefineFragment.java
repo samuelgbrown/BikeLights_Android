@@ -409,15 +409,16 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
         });
 
         // Set up the Image Modification Spinner
-        // TODO: Change this spinner's behavior if it's an idle image?
+        // TODO: Change this spinner's behavior if it's an idle image? (use if (isIdle))
         imageModSpinner = rootView.findViewById(R.id.imageModSpinner);
-        imageModSpinner.setAdapter(new ImageModSpinnerAdapter(getContext()));
+        imageModSpinner.setAdapter(new ImageModSpinnerAdapter(getContext(), isIdle));
         imageModSpinner.setSelection(0, false);
         imageModSpinner.setListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 // Launch a dialog window, chosen according to the selection, that will allow the user to paint onto the image.
                 FragmentManager fm = getChildFragmentManager(); //getFragmentManager();
+                // TODO: SOON: consider the value of isIdle before sending position (need to add one if isIdle, either here or inside function?  Use parent.getItemAtPosition(position)?)
                 ImageModFragment fragment = ImageModFragment.newInstance(palette, imageStack.currentImage(), position, isIdle);
                 fragment.show(fm, "Image Mod Dialog");
             }

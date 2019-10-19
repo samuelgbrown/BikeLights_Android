@@ -36,4 +36,8 @@ public class Constants {
     public static final int IMAGE_CONSTROT_GREL = 18;
     public static final int IMAGE_CONSTROT_WREL = 19;
     public static final int IMAGE_SPINNER = 20;
+
+    public static final int SINGLE_SLICE = 21;
+    public static final int REPEAT_SLICE = 22;
+    public static final int REPEAT_PATTERN = 23;
 }

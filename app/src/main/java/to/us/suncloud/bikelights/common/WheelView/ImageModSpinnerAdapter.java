@@ -22,15 +22,19 @@ public class ImageModSpinnerAdapter implements SpinnerAdapter {
     private LayoutInflater inflater;
     private String[] contentStrings;
     private List<Integer> contentDrawables;
+    private boolean isIdle; // Is this spinner adapter being used for an idle image, or a main image?
 
-    public ImageModSpinnerAdapter(Context context) {
+    public ImageModSpinnerAdapter(Context context, boolean isIdle) {
 //        this.baseAdapter = baseAdapter;
         inflater = LayoutInflater.from(context);
 
         String[] allContentStrings = context.getResources().getStringArray(R.array.image_mod_start_types); // Get the content strings from resources (assume that the first string is simply the "select one" string to be displayed on the Spinner, but not selectable)
         contentStrings = Arrays.copyOfRange(allContentStrings, 1, allContentStrings.length); // Store all but the first string
         contentDrawables = new ArrayList<>();
-        contentDrawables.add(R.drawable.slice);
+        if (!isIdle) {
+            // Can only apply a single slice if this is a main image
+            contentDrawables.add(R.drawable.slice);
+        }
         contentDrawables.add(R.drawable.repeat_slice);
         contentDrawables.add(R.drawable.repeat_pattern);
     }

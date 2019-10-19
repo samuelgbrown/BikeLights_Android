@@ -198,7 +198,7 @@ public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<Blue
             mWheelView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // TODO: (May need to abandon this, due to the complications of starting an activity for result without access to the Activity Context) Open a wheel-view activity on the wheel pointed to by this device.  Have it return to this window, but save the result of messing with the wheel activity to the MainActivity? Or something?
+                    // TO_DO: (May need to abandon this, due to the complications of starting an activity for result without access to the Activity Context) Open a wheel-view activity on the wheel pointed to by this device.  Have it return to this window, but save the result of messing with the wheel activity to the MainActivity? Or something?
 //                    if (mConnectionLocation != Constants.ID_NONE) {
 //                        // If the connection location indicates that this device points to one of the wheels
 //                        Intent intent = new Intent(v.getContext(), WheelViewActivity.class); // Create an intent for a wheel view activity
