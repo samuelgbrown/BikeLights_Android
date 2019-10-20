@@ -86,6 +86,8 @@ public class ColorDefRecyclerAdapter extends ColorDefRecyclerView.Adapter<ColorD
         public abstract void bind(int position);
 
         public abstract void bind_updateColorNum(int position);
+
+//        public abstract void unbind();
     }
 
     public class Color_ViewHolder extends bindViewHolder {
@@ -839,7 +841,7 @@ public class ColorDefRecyclerAdapter extends ColorDefRecyclerView.Adapter<ColorD
 
     @Override
     public void onViewDetachedFromWindow(@NonNull bindViewHolder holder) {
-        // TODO: Implement this to remove any onClickListeners
+        // TO_DO: Implement this to remove any onClickListeners (why is this needed?  If defintely needed, just implement unbind() in bindViewHolder, and let every viewHolder take care of itself)
         super.onViewDetachedFromWindow(holder);
     }
 

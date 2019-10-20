@@ -31,6 +31,7 @@ import java.util.Collections;
 import to.us.suncloud.bikelights.R;
 import to.us.suncloud.bikelights.common.Color.Bike_Wheel_Animation;
 import to.us.suncloud.bikelights.common.Color.Color_;
+import to.us.suncloud.bikelights.common.Constants;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -48,11 +49,6 @@ public class ImageModFragment extends DialogFragment {
     private static final String ARG_ISIDLE = "ARG_ISIDLE";
 
     private static final int ROTATION_OFFSET = 0; // Rotation offset to make the right side of the wheel index 0
-
-    // Possible initialization settings (Make sure these are synchronized with R.array.image_mod_start_types)
-    public static final int INITIALIZE_SLICE = 0;
-    public static final int INITIALIZE_REPEAT_SLICE = 1;
-    public static final int INITIALIZE_PATTERN = 2;
 
     private static final int SLICE_STARTING_SIZE = 10; // The starting width of slice
 
@@ -539,7 +535,7 @@ public class ImageModFragment extends DialogFragment {
 
         // Initialize GUI according to input options
         // Get the initialization option from the input arguments
-        int initialization = INITIALIZE_SLICE;
+        int initialization = Constants.SINGLE_SLICE;
         boolean doIdle = false;
         Bundle args = getArguments();
 
@@ -554,10 +550,10 @@ public class ImageModFragment extends DialogFragment {
         boolean specifyPattern = false;
         boolean repeatSlice = false;
         switch (initialization) {
-            case INITIALIZE_REPEAT_SLICE:
+            case Constants.REPEAT_SLICE:
                 repeatSlice = true;
                 break;
-            case INITIALIZE_PATTERN:
+            case Constants.REPEAT_PATTERN:
                 repeatSlice = true;
                 specifyPattern = true;
                 break;
@@ -580,6 +576,7 @@ public class ImageModFragment extends DialogFragment {
         if (doIdle) {
             // Force the pattern to repeat around the wheel, equally spaced
             sliceRepeatSwitch.setVisibility(View.GONE);
+
             sliceSpaceEqually.setChecked(false);
             sliceSpaceEqually.setChecked(true);
             sliceSpaceEqually.setVisibility(View.GONE);

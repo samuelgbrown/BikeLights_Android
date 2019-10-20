@@ -202,7 +202,7 @@ public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<Blue
 //                    if (mConnectionLocation != Constants.ID_NONE) {
 //                        // If the connection location indicates that this device points to one of the wheels
 //                        Intent intent = new Intent(v.getContext(), WheelViewActivity.class); // Create an intent for a wheel view activity
-//                        intent.putExtra(BIKE_WHEEL_ANIMATION, cList_front); // Send the Wheel View Activity the color list for the front wheel TODO: How to get the color_list?
+//                        intent.putExtra(BIKE_WHEEL_ANIMATION, cList_front); // Send the Wheel View Activity the color list for the front wheel TO_DO: How to get the color_list?
 //                        intent.putExtra(WHEEL_LOCATION, Constants.ID_FRONT); // Send the Wheel View Activity the color list for the front wheel
 //                        v.getContext().startActivity(intent); // Start the new activity
 //                    }

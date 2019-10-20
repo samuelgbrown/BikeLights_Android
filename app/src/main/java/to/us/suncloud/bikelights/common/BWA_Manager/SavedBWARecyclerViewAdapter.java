@@ -163,6 +163,7 @@ public class SavedBWARecyclerViewAdapter extends ObservedRecyclerView.Adapter<Sa
                 nameView.setText(view.getResources().getString(R.string.bwa_empty_name));
                 nameView.setTypeface(null, Typeface.ITALIC);
             }
+
             // TODO: Eventually, a list of "pre-bookmarked" animations may be put in, in which case they cannot be deleted
             remove.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -180,7 +181,7 @@ public class SavedBWARecyclerViewAdapter extends ObservedRecyclerView.Adapter<Sa
                                         // If there are no more saveBWA's, then let the RecyclerView reevaluate its entire life
 //                                        recyclerView.setAdapter(SavedBWARecyclerViewAdapter.this); // Force a redraw of all of the recyclerViews, because Android is bullshit and there seems to be no other goddamn way to show my goddamn empty View
                                         notifyDataSetChanged();
-                                        // TODO: Fuck all this motherfucking bullshit and just implement the stupid motherfucking ObservableAdapter, motherfucking shit fuck damn
+                                        // TO_DO: Fuck all this motherfucking bullshit and just implement the stupid motherfucking ObservableAdapter, motherfucking shit fuck damn
                                     }
                                 }
                             })

@@ -38,8 +38,6 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
     private BluetoothDevice mFrontStoredDevice = null; // Store devices, if needed, to attempt reconnection should anything happen to the connection unintentionally
     private BluetoothDevice mRearStoredDevice = null;
 
-    // TODO: Use the broadcast receiver registered in the Main Activity here:  If bluetooth gets turned off, .close() all of the threads
-
     private BroadcastReceiver br = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -101,7 +99,7 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
         boolean status = true; // Start out assuming that the data transfer will go well...
 
         // First, process the byte list
-        List<Byte> processedByteList = rawByteList.getProcessedByteList();
+        byte[] processedByteList = rawByteList.getProcessedByteList();
 
         // Then, send the processed byte list to the device indicated
         try {
@@ -110,7 +108,7 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
                     mFrontManagerThread.write(processedByteList);
                     break;
                 case Constants.ID_REAR:
-
+                    mRearManagerThread.write(processedByteList);
                     break;
             }
         } catch (Exception e) {
@@ -120,6 +118,22 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
         }
 
         return status;
+    }
+
+    public void requestDataFromWheel(BluetoothByteList.ContentType content, int wheelLoc) {
+        // Send a request for data to the wheel location
+
+        if (isWheelConnected(wheelLoc)) {
+            // If the wheel is connected, then send a message to the device to request its BWA
+
+            // Create a raw byte list for this content as a request
+            BluetoothByteList requestByteList = new BluetoothByteList(BluetoothByteList.ContentType.BWA, true);
+
+            // Send this request to the wheel of interest
+            sendBytesToDevice(requestByteList, wheelLoc);
+
+            // The response will be received by this ConnectionManager, and broadcast to all Handlers
+        }
     }
 
     public void connectToDevice(BluetoothDevice device, int wheelLoc) {
@@ -507,6 +521,8 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
                 return mFrontManagerThread != null;
             case Constants.ID_REAR:
                 return mRearManagerThread != null;
+            default:
+                return false;
         }
     }
 }

@@ -1,5 +1,8 @@
 package to.us.suncloud.bikelights.common.Bluetooth;
 
+import android.support.annotation.NonNull;
+import android.support.v4.content.res.TypedArrayUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +22,7 @@ public class BluetoothByteList {
     private int readingBytePointerLoc = 0; // For reading, where is the location of the pointer to the next byte to be read.
     private int writingMessagePointerLoc = 0; //  For writing, what is the number of the next message.
     private int totalRequiredMessages = 0; // For writing, how many 64-byte messages will be needed to send this?  Calculated in startWriting()
-    private boolean isWriting = false; // If the message is actively being written.  If so, the message cannot be modified, only ready
+    private boolean isWriting = false; // If the message is actively being written.  If so, the message cannot be modified, only read
 
 
     public enum ContentType {
@@ -30,9 +33,32 @@ public class BluetoothByteList {
         Battery
     }
 
+    public BluetoothByteList(byte[] incomingProcessedyteList, int numBytes) {
+        // Extract the "raw" byte list from the "processed" byte list that we just received from the Arduino (i.e. strip off connection-level metadata and store the rest)
+        // TODO: May need to take into account the fact that only 64-bytes get sent at a time?  Make into a non-constructor function and keep track of where in the message we are?
+
+        // Extract the header information
+        request = ByteMath.getBoolFromByte(incomingProcessedyteList[0], 7);
+        content = contentValToType(ByteMath.getNIntFromByte(incomingProcessedyteList[0], 3, 4));
+
+        // Save the rest of the raw byte data to the rawByteList
+        for (int byteNum = 0;byteNum < (numBytes - 1); byteNum++) {
+            // Go through the byte list (except the first byte, which was just the header), and get the raw data (encapsulating as a Byte in the process)
+            rawByteList.add(incomingProcessedyteList[byteNum + 1]);
+        }
+    }
+
     public BluetoothByteList(ContentType content, boolean request) {
         this.content = content; // Create a new byte list that will be interpreted as the content
         this.request = request;
+    }
+
+    public boolean isRequest() {
+        return request;
+    }
+
+    public ContentType getContentType() {
+        return content;
     }
 
     public void addByte(Byte newByte) {
@@ -153,8 +179,13 @@ public class BluetoothByteList {
             }
         }
 
-        // TODO: Unbox all of the Bytes in the List into a byte[]
-        return outList;
+        // Convert the Byte List into a byte array (requires unboxing of each individual Byte, so must be done in a for loop)
+        byte[] outBytes = new byte[outList.size()]; // Isn't is nice to be able to define arrays on the stack without needing to worry about memory leaks?
+        for (int i = 0;i < outList.size(); i++) {
+            outBytes[i] = outList.get(i);
+        }
+
+        return outBytes;
     }
 
     private List<Byte> generateHeader() {
@@ -189,6 +220,23 @@ public class BluetoothByteList {
                 return 4;
             default:
                 return 0;
+        }
+    }
+
+    private ContentType contentValToType(int contentValIn) {
+        switch (contentValIn) {
+            case 0:
+                return ContentType.BWA;
+            case 1:
+                return ContentType.Kalman;
+            case 2:
+                return ContentType.Brightness;
+            case 3:
+                return ContentType.Storage;
+            case 4:
+                return ContentType.Battery;
+            default:
+                return ContentType.BWA;
         }
     }
 }

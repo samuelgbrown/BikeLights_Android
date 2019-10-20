@@ -22,7 +22,7 @@ public class ImagePatternRecyclerAdapter extends RecyclerView.Adapter<ImagePatte
     private ArrayList<Boolean> isSelectedList;
     private ArrayList<Boolean> memory_IsSelectedList; // Used to calculated differences in data
 
-    private ArrayList<Color_> colorList; // TODO: Change this to a Bike_Wheel_Animation?
+    private ArrayList<Color_> colorList; // TO_DO: Change this to a Bike_Wheel_Animation?
     private ArrayList<Color_> memory_ColorList;
 
     private List<AnimatorSet> colorAnimatorSets; // The AnimatorSets used to animate each of the preview Color_'s in palette

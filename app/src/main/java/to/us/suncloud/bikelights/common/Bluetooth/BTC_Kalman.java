@@ -90,7 +90,7 @@ public class BTC_Kalman {
 
         // Next, get Q, which is a float (in 4 bytes)
         List<Byte> qBytes = rawByteList.getNextBytes(4);
-        float Q = 0; // TODO: Write float extraction code from byte array
+        float Q = ByteMath.getFloatFromByteArray(qBytes);
 
         // Next, get the matrix R
         List<List<Float>> R = new ArrayList<List<Float>>(n_obs*n_obs);

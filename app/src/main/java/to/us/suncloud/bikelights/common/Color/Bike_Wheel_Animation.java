@@ -26,7 +26,7 @@ public class Bike_Wheel_Animation implements Serializable {
     // Meta data
     private ImageMeta_ mImageMainMeta = new Image_Meta_ConstRot_WRel(0); // The meta data for this Bike_Wheel_Animation
     private ImageMeta_ mImageIdleMeta = new Image_Meta_ConstRot_WRel(0); // The meta data for this Bike_Wheel_Animation
-//    private float brightnessScale = 1; // TODO: (Still doing?) Use colorObj#scale to generate new colorObj's with a brightness scale GIVEN BY THE MAIN ACTIVITY.  Value between (0 1] that scales the brightness of all LED values (allows user to quickly and easily scale the brightness of the wheel as a whole)
+//    private float brightnessScale = 1; // TO_DO: (Still doing?) Use colorObj#scale to generate new colorObj's with a brightness scale GIVEN BY THE MAIN ACTIVITY.  Value between (0 1] that scales the brightness of all LED values (allows user to quickly and easily scale the brightness of the wheel as a whole)
 
     public Bike_Wheel_Animation(Bike_Wheel_Animation otherList) {
         this.mPalette = otherList.getPalette();
