@@ -122,3 +122,10 @@ C == 4 : Battery
 BA (8uint) - The amount of battery remaining, out of 255.
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # #
+C == 5 : Power
+- [P X X X X X X X -
+P (bool) - The power state of the LED strip (0 = off)
+
+# # # # # # # # # # # # # # # # # # # # # # # # #

@@ -8,7 +8,7 @@ import to.us.suncloud.bikelights.common.ByteMath;
 public class BTC_BrightnessScale {
     private float brightnessScale = 1f; //  Will be (0 - 1]
 
-    private BTC_BrightnessScale(float brightnessScale) {
+    public BTC_BrightnessScale(float brightnessScale) {
         this.brightnessScale = brightnessScale;
     }
 

@@ -11,6 +11,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 
 import to.us.suncloud.bikelights.R;
+import to.us.suncloud.bikelights.common.Constants;
 
 import static to.us.suncloud.bikelights.common.WheelView.wheelSelectDrawable.wheelPowerState.*;
 import static to.us.suncloud.bikelights.common.WheelView.wheelSelectDrawable.wheelConnectedState.*;
@@ -115,19 +116,22 @@ public class wheelSelectDrawable extends Drawable {
         return ContextCompat.getColor(mParentView.getContext(), colorResource);
     }
 
-    public void setRearPowerState(boolean isWheelOn) {
-        if (isWheelOn) {
-            rearPState = wheelOn;
-        } else {
-            rearPState = wheelOff;
-        }
-    }
-
-    public void setFrontPowerState(boolean isWheelOn) {
-        if (isWheelOn) {
-            frontPState = wheelOn;
-        } else {
-            frontPState = wheelOff;
+    public void setPowerState(boolean isWheelOn, int wheelLoc) {
+        switch (wheelLoc) {
+            case Constants.ID_FRONT:
+                if (isWheelOn) {
+                    frontPState = wheelOn;
+                } else {
+                    frontPState = wheelOff;
+                }
+                break;
+            case Constants.ID_REAR:
+                if (isWheelOn) {
+                    rearPState = wheelOn;
+                } else {
+                    rearPState = wheelOff;
+                }
+                break;
         }
     }
 

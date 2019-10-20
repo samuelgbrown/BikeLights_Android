@@ -6,13 +6,14 @@ import to.us.suncloud.bikelights.common.ByteMath;
 public class BTC_Battery {
     private int battery = 0; // Will be 0-255
 
-    private BTC_Battery(int battery) {
+    public BTC_Battery(int battery) {
         this.battery = battery;
     }
 
     public int getBattery() {
         return battery;
     }
+
 
     public static BTC_Battery fromByteList(BluetoothByteList rawByteList) {
         // Extract a BTC_Battery object from the incoming byte list

@@ -158,6 +158,10 @@
     <string name="color_quality_speed">Speed:</string>
     <string name="color_quality_b">Blend:</string>
 
+    <string name="brightness">Brightness</string>
+    <string name="storage">Storage</string>
+    <string name="battery">Battery</string>
+
     <string name="confirm_color">Select</string>
     <string name="confirm_color_toRGBW">Select (RGBW)</string>
 

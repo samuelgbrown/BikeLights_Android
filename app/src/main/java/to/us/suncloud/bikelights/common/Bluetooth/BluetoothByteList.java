@@ -30,8 +30,11 @@ public class BluetoothByteList {
         Kalman,
         Brightness,
         Storage,
-        Battery
+        Battery,
+        Power
     }
+
+    public BluetoothByteList() {} // A blank byte list
 
     public BluetoothByteList(byte[] incomingProcessedyteList, int numBytes) {
         // Extract the "raw" byte list from the "processed" byte list that we just received from the Arduino (i.e. strip off connection-level metadata and store the rest)
@@ -206,7 +209,7 @@ public class BluetoothByteList {
         return  headerBytes;
     }
 
-    private byte contentTypeToVal(ContentType contentTypeIn) {
+    public static byte contentTypeToVal(ContentType contentTypeIn) {
         switch (contentTypeIn) {
             case BWA:
                 return 0;
@@ -218,12 +221,14 @@ public class BluetoothByteList {
                 return 3;
             case Battery:
                 return 4;
+            case Power:
+                return 5;
             default:
                 return 0;
         }
     }
 
-    private ContentType contentValToType(int contentValIn) {
+    public static ContentType contentValToType(int contentValIn) {
         switch (contentValIn) {
             case 0:
                 return ContentType.BWA;
@@ -235,8 +240,29 @@ public class BluetoothByteList {
                 return ContentType.Storage;
             case 4:
                 return ContentType.Battery;
+            case 5:
+                return ContentType.Power;
             default:
                 return ContentType.BWA;
+        }
+    }
+
+    public static String contentTypeToString(ContentType contentTypeIn) {
+        switch (contentTypeIn) {
+            case BWA:
+                return "Wheel Animation";
+            case Kalman:
+                return "Kalman Data";
+            case Brightness:
+                return "Brightness Data";
+            case Storage:
+                return "Storage Data";
+            case Battery:
+                return "Battery Data";
+            case Power:
+                return "Power State";
+            default:
+                return "Unknown Data";
         }
     }
 }

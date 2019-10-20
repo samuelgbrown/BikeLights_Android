@@ -101,6 +101,8 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
         // First, process the byte list
         byte[] processedByteList = rawByteList.getProcessedByteList();
 
+        // TODO SOON: Change this so that it only sends 64 bytes at a time!!!
+
         // Then, send the processed byte list to the device indicated
         try {
             switch (wheelLoc) {
@@ -411,8 +413,8 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
         public void write(byte[] bytes) {
             try {
                 // Write the data to the OutputStream (usually not a blocking call, but may be)
-                mOutStream.write(bytes);
                 int numBytes = bytes.length;
+                mOutStream.write(bytes);
 
                 // Share the sent message with the UI activity.
                 Message writtenMsg = mMasterHandler.obtainMessage(
