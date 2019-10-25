@@ -49,7 +49,7 @@ public abstract class BluetoothInteractionThread extends Thread implements Bluet
         isWaiting = true;
         long endWaitTime = Calendar.getInstance().getTimeInMillis() + MAX_WAIT_MILLISECONDS;
 
-        while (isWaiting) {
+        while (isWaiting) { // Changed to true through the handleMessage() function
             // If we are still waiting...
 
             // Check the current time

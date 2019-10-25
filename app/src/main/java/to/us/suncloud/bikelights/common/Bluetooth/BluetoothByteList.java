@@ -11,14 +11,15 @@ import to.us.suncloud.bikelights.common.ByteMath;
 // A class that will hold a raw byte list that will be automatically processed to be ready to send to the Arduino.  Pretty redundant with the ByteBuffer java.nio class, but...well, I already wrote most of this by the time I found that, and also, since C++ is on one side and Java is on the other, I like being pretty close to the byte-level mechanics of the stream, and I don't really trust ByteBuffer...
 public class BluetoothByteList {
     // Set some parameters for the message and header sizes
-    private static final int NUM_TOTAL_BYTES_PER_MESSAGE = 64;
-    private static final int NUM_BYTES_PER_HEADER = 2;
-    private static final int NUM_RAW_BYTES_PER_MESSAGE = NUM_TOTAL_BYTES_PER_MESSAGE - NUM_BYTES_PER_HEADER;
-    private static final int MAX_NUM_MESSAGES = 2^4; // The current maximum number of messages that can be incorporated as a single communication; allows for 992 raw bytes of data
+    public static final int NUM_TOTAL_BYTES_PER_MESSAGE = 64;
+    public static final int NUM_BYTES_PER_HEADER = 2;
+    public static final int NUM_RAW_BYTES_PER_MESSAGE = NUM_TOTAL_BYTES_PER_MESSAGE - NUM_BYTES_PER_HEADER;
+    public static final int MAX_NUM_MESSAGES = 2^4; // The current maximum number of messages that can be incorporated as a single communication; allows for 992 raw bytes of data
 
     private List<Byte> rawByteList = new ArrayList<>(); // The byte list as it is created by the Android code.  Must be processed before being sent to the Arduino
     private ContentType content; // The type of content that is being held in the rawByteList (used to create the header at the beginning of each message
     private boolean request; // Is the message that is being held in this byte list a request for more information, or does it contain information to send to the Arduino?
+    private boolean confirmation; // Is the message currently being held in this byte list a confirmation message sent from Arduino?
     private int readingBytePointerLoc = 0; // For reading, where is the location of the pointer to the next byte to be read.
     private int writingMessagePointerLoc = 0; //  For writing, what is the number of the next message.
     private int totalRequiredMessages = 0; // For writing, how many 64-byte messages will be needed to send this?  Calculated in startWriting()
@@ -31,7 +32,8 @@ public class BluetoothByteList {
         Brightness,
         Storage,
         Battery,
-        Power
+        Power,
+        SP_Confirm // A special type that refers to any kind of confirmation message (this will be the type of any message with the CF bit set)
     }
 
     public BluetoothByteList() {} // A blank byte list
@@ -42,7 +44,13 @@ public class BluetoothByteList {
 
         // Extract the header information
         request = ByteMath.getBoolFromByte(incomingProcessedyteList[0], 7);
-        content = contentValToType(ByteMath.getNIntFromByte(incomingProcessedyteList[0], 3, 4));
+        confirmation = ByteMath.getBoolFromByte(incomingProcessedyteList[0], 3);
+
+        if (confirmation) {
+            content = ContentType.SP_Confirm; // If this is a confirmation message, then record so (Ugh, I was tired when I wrote this...maybe this is dumb)
+        } else {
+            content = contentValToType(ByteMath.getNIntFromByte(incomingProcessedyteList[0], 3, 4)); // Otherwise, record the content type
+        }
 
         // Save the rest of the raw byte data to the rawByteList
         for (int byteNum = 0;byteNum < (numBytes - 1); byteNum++) {
@@ -58,6 +66,10 @@ public class BluetoothByteList {
 
     public boolean isRequest() {
         return request;
+    }
+
+    public boolean isConfirmation() {
+        return confirmation;
     }
 
     public ContentType getContentType() {
@@ -115,6 +127,10 @@ public class BluetoothByteList {
         isWriting = false; // We are not writing the byte list, and are allowed to add data to the message
     }
 
+    public boolean isDoneReading() {
+        return readingBytePointerLoc > rawByteList.size();
+    }
+
     public int startWriting() {
         // Set the pointer location to zero
         readingBytePointerLoc = 0; // Initialize the byte pointer (used to traverse the raw byte list)
@@ -160,7 +176,7 @@ public class BluetoothByteList {
         return rawByteList;
     }
 
-    public byte[] getProcessedByteList() {
+    public byte[] getNextProcessedByteList() {
         // Do the processing on this byte list, adding in headers every 64 bytes as needed.
         // Returns a single 64-byte message, with header included. Subsequent calls will return each following message
         // TODO: Initialize a full write out with startWriting(), which will return the total number of 64-byte blocks to be sent, and each call to this function will return the next block, which the calling function can send once we hear back from the Arduino that it's ready
@@ -187,7 +203,6 @@ public class BluetoothByteList {
         for (int i = 0;i < outList.size(); i++) {
             outBytes[i] = outList.get(i);
         }
-
         return outBytes;
     }
 
