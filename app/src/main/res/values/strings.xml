@@ -20,6 +20,39 @@
     <string name="pref_title_display_name">Display name</string>
     <string name="pref_default_display_name">John Smith</string>
 
+    <string name="pref_header_leds">LED Preferences</string>
+    <string name="pref_num_leds">Number of LEDs</string>
+    <string name="pref_default_num_leds">120</string>
+
+    <string name="pref_header_kalman">Kalman Preferences</string>
+    <string name="pref_kalman_q">Q</string>
+    <string name="pref_category_kalman_q">Q</string>
+    <string name="pref_summary_kalman_q">Measurement uncertainty</string>
+    <string name="pref_default_kalman_q">100</string>
+
+    <string name="pref_category_kalman_p">P</string>
+    <string name="pref_kalman_p_1">P(1)</string>
+    <string name="pref_summary_kalman_p_1">Initial uncertainty in position</string>
+    <string name="pref_default_kalman_p_1">0</string>
+
+    <string name="pref_kalman_p_2">P(2)</string>
+    <string name="pref_summary_kalman_p_2">Initial uncertainty in velocity</string>
+    <string name="pref_default_kalman_p_2">1</string>
+
+    <string name="pref_kalman_p_3">P(3)</string>
+    <string name="pref_summary_kalman_p_3">Initial uncertainty in acceleration</string>
+    <string name="pref_default_kalman_p_3">10</string>
+
+    <string name="pref_category_kalman_r">R</string>
+    <string name="pref_kalman_r_1">R(1)</string>
+    <string name="pref_summary_kalman_r_1">Covariance in position measurement noise</string>
+    <string name="pref_default_kalman_r_1">0.00001</string>
+
+    <string name="pref_kalman_r_2">R(2)</string>
+    <string name="pref_summary_kalman_r_2">Covariance in velocity measurement noise</string>
+    <string name="pref_default_kalman_r_2">0.01</string>
+
+
     <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
     <string-array name="pref_example_list_titles">
         <item>Always</item>

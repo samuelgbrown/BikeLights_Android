@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:key="kalman_q_category"
+        android:title="@string/pref_category_kalman_q">
+
+        <EditTextPreference
+            android:defaultValue="@string/pref_default_kalman_q"
+            android:inputType="numberDecimal"
+            android:key="kalman_q"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/pref_summary_kalman_q"
+            android:title="@string/pref_kalman_q" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="kalman_p_category"
+        android:title="@string/pref_category_kalman_p">
+        <EditTextPreference
+            android:defaultValue="@string/pref_default_kalman_p_1"
+            android:inputType="numberDecimal"
+            android:key="kalman_p_1"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/pref_summary_kalman_p_1"
+            android:title="@string/pref_kalman_p_1" />
+
+        <EditTextPreference
+            android:defaultValue="@string/pref_default_kalman_p_2"
+            android:inputType="numberDecimal"
+            android:key="kalman_p_2"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/pref_summary_kalman_p_2"
+            android:title="@string/pref_kalman_p_2" />
+
+        <EditTextPreference
+            android:defaultValue="@string/pref_default_kalman_p_3"
+            android:inputType="numberDecimal"
+            android:key="kalman_p_3"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/pref_summary_kalman_p_3"
+            android:title="@string/pref_kalman_p_3" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="kalman_r_category"
+        android:title="@string/pref_category_kalman_r">
+
+        <EditTextPreference
+            android:defaultValue="@string/pref_default_kalman_r_1"
+            android:inputType="numberDecimal"
+            android:key="kalman_r_1"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/pref_summary_kalman_r_1"
+            android:title="@string/pref_kalman_r_1" />
+
+        <EditTextPreference
+            android:defaultValue="@string/pref_default_kalman_r_2"
+            android:inputType="numberDecimal"
+            android:key="kalman_r_2"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/pref_summary_kalman_r_2"
+            android:title="@string/pref_kalman_r_2" />
+    </PreferenceCategory>
+</PreferenceScreen>

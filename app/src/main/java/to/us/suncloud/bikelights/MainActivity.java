@@ -6,8 +6,10 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +28,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import to.us.suncloud.bikelights.common.BWA_Manager.SavedBWAFragment;
 import to.us.suncloud.bikelights.common.Bluetooth.BTC_Battery;
@@ -84,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
     private Switch rearPowerSwitch;
     private Switch frontPowerSwitch;
 
-    // TODO SOON: Set up the callbacks for the following GUI elements
     private ProgressBar frontStorageProg;
     private ProgressBar rearStorageProg;
 
@@ -107,9 +110,13 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Get the active Settings
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
         // Initialize the Bike_Wheel_Animation's (must be done here because Resources are required...I think)
-        bwa_rear = new Bike_Wheel_Animation(getResources().getInteger(R.integer.num_leds)); // List of Color_'s that are a part of the rear wheel
-        bwa_front = new Bike_Wheel_Animation(getResources().getInteger(R.integer.num_leds)); // List of Color_'s that are a part of the front wheel
+        int numLEDs = Integer.parseInt(preferences.getString("num_leds", Integer.toString(getResources().getInteger(R.integer.num_leds))));
+        bwa_rear = new Bike_Wheel_Animation(numLEDs); // List of Color_'s that are a part of the rear wheel
+        bwa_front = new Bike_Wheel_Animation(numLEDs); // List of Color_'s that are a part of the front wheel
 
         // TODO: Complete recovery
         if (savedInstanceState != null) {
@@ -213,6 +220,10 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
             }
         });
+
+        // Initialize the battery to be out of 255
+        frontBatteryProg.setMax(255);
+        rearBatteryProg.setMax(255);
 
 
         // Start a wheel-view activity when clicking one of the wheel buttons
@@ -339,6 +350,93 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         colorFile.delete();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // TODO: Check that the number of LEDs from the Settings matches with everything that uses it (BWA...anything else?), then do...something
+    }
+
+    private void setBatteryGUIVal(int batteryVal, int wheelLoc) {
+        // Get the right progress bar to affect
+        ProgressBar barToChange;
+
+        switch (wheelLoc) {
+            case Constants.ID_FRONT:
+                barToChange = frontBatteryProg;
+                break;
+            case Constants.ID_REAR:
+                barToChange = rearBatteryProg;
+                break;
+            default:
+                barToChange = frontBatteryProg;
+        }
+
+        // Set the value of the progress bar
+        barToChange.setProgress(batteryVal);
+    }
+
+    private void setStorageGUIVal(int curVal, int curMax, int wheelLoc) {
+        // Get the right progress bar to affect
+        ProgressBar barToChange;
+
+        switch (wheelLoc) {
+            case Constants.ID_FRONT:
+                barToChange = frontStorageProg;
+                break;
+            case Constants.ID_REAR:
+                barToChange = rearStorageProg;
+                break;
+            default:
+                barToChange = frontStorageProg;
+        }
+
+        // Set the maximum and current storage values
+        barToChange.setMax(curMax);
+        barToChange.setProgress(curVal);
+    }
+
+    private void setPowerStateGUIVal(boolean newPowerState, boolean fromUser, int wheelLoc) {
+        // Set the GUI to the current power state (will notify the user of new power state, if they didn't cause the change)
+        // First, get the objects for this wheel
+        Switch powerSwitch;
+        switch (wheelLoc) {
+            case Constants.ID_FRONT:
+                powerSwitch = frontPowerSwitch;
+                break;
+            case Constants.ID_REAR:
+                powerSwitch = rearPowerSwitch;
+                break;
+            default:
+                return;
+        }
+
+        // If this was not from the user, see if the user needs to be notified about this
+        boolean currentPowerState = powerSwitch.isChecked();
+        if (!fromUser && newPowerState != currentPowerState) {
+            String newPowerStateStr = newPowerState ? "on" : "off";
+
+            sendWheelToast("LEDs are " + newPowerStateStr, wheelLoc);
+        }
+
+
+        // Next, update the wheel drawable (so the wheel color can change)
+        wheelDrawable.setPowerState(newPowerState, wheelLoc);
+        wheelSelectView.invalidate();
+
+        // Finally, update the power switch
+        // Get the string to change the display to
+        String switchString;
+        if (newPowerState) {
+            switchString = getApplicationContext().getResources().getString(R.string.leds_on);
+        } else {
+            switchString = getApplicationContext().getResources().getString(R.string.leds_off);
+        }
+
+        powerSwitch.setText(switchString);
+        powerSwitch.setChecked(newPowerState);
+    }
+
 
     private void startWheelViewActivity(Bike_Wheel_Animation curBWA, int wheelLocation) {
         startWheelViewActivity(curBWA, wheelLocation, false);
@@ -353,7 +451,6 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
     }
 
     private void updateBluetoothStatus() {
-        // TODO: Probably need to change this on bluetooth status change, as well?
         boolean frontSynched = bwa_front.equals(arduino_last_bwa_front);
         boolean readSynched = bwa_rear.equals(arduino_last_bwa_rear);
 
@@ -416,7 +513,6 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         seekBarToChange.setProgress(brightness);
     }
 
-    // TODO SOON: Change this so that it doesn't just "download" the BWAs, but also "downloads" the brightness settings (use setBrightness() )
     private void bluetoothDownloadWheelSettings() {
         // Transfer the BWA's from the "last Arduino BWA's" variable to the main BWA
         bwa_front = arduino_last_bwa_front.clone();
@@ -426,7 +522,6 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         setBrightness(arduino_last_brightness_front, Constants.ID_FRONT);
         setBrightness(arduino_last_brightness_rear, Constants.ID_REAR);
 
-
         // Update the GUI
         updateBluetoothStatus();
 
@@ -435,14 +530,26 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
     }
 
     private void bluetoothUploadWheelSettings() {
-        // TODO: Upload the BWAs and brightness settings from both wheels (perhaps, just do one at a time (i.e. can select individual wheels))?
-        // TODO: Handle the sending only 64-bytes at a time!!! Do this in a background thread
+        // Upload the BWAs and brightness settings from both wheels (TODO: Perhaps, just do one at a time (i.e. can select individual wheels))?
+
+        // Prepare the data to be sent to both wheels
+         List<BluetoothByteList> byteListsToSend = new ArrayList<>();
+         List<Integer> byteListDestinations = new ArrayList<>();
+
+        byteListsToSend.add(bwa_front.toByteList());
+        byteListDestinations.add(Constants.ID_FRONT);
+
+        byteListsToSend.add(new BTC_BrightnessScale(brightnessSeekbarToFloat(Constants.ID_FRONT)).toByteList());
+        byteListDestinations.add(Constants.ID_FRONT);
+
+        byteListsToSend.add(bwa_rear.toByteList());
+        byteListDestinations.add(Constants.ID_REAR);
+
+        byteListsToSend.add(new BTC_BrightnessScale(brightnessSeekbarToFloat(Constants.ID_REAR)).toByteList());
+        byteListDestinations.add(Constants.ID_REAR);
 
         // Send each piece of data to the wheel consecutively
-        sendDataToWheel(bwa_front.toByteList(), Constants.ID_FRONT);
-        sendDataToWheel(new BTC_BrightnessScale(brightnessSeekbarToFloat(Constants.ID_FRONT)).toByteList(), Constants.ID_FRONT);
-        sendDataToWheel(bwa_front.toByteList(), Constants.ID_FRONT);
-        sendDataToWheel(new BTC_BrightnessScale(brightnessSeekbarToFloat(Constants.ID_REAR)).toByteList(), Constants.ID_REAR);
+        mManager.sendBytesToDevice(byteListsToSend, byteListDestinations);
     }
 
     private float brightnessSeekbarToFloat(int wheelLoc) {
@@ -634,9 +741,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         sendConnectionToast(connected, wheelLoc);
 
         if (connected) {
-            // TODO SOON: Put this into a function, and call the function on both wheels if they exist during onCreate (should be done in a thread or something)
             requestFullUpdateFromWheel(wheelLoc);
-
         }
 
         // Update the GUI
@@ -644,6 +749,8 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
     }
 
     private void requestFullUpdateFromWheel(final int wheelLoc) {
+        // TODO SOON: Call this on both wheels if they exist during onCreate (should be done in a thread or something)
+
         // This function will spawn a thread that will request all of the relevant information from a wheel
 
         if (isWheelReady(wheelLoc)) {
@@ -667,7 +774,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                 @Override
                 public void timeoutFun(BluetoothByteList.ContentType contentType, int wheelLoc) {
                     // If we have timed out, send an error toast
-                    sendToast("Error retrieving " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel. Skipping.");
+                    sendWheelToast("Error retrieving " + BluetoothByteList.contentTypeToString(contentType) + ". Skipping.", wheelLoc);
                     Log.e(TAG, "Could not receive " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel.");
                 }
             }.run();
@@ -691,34 +798,13 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                 @Override
                 public void timeoutFun(BluetoothByteList.ContentType contentType, int wheelLoc) {
                     // If we have timed out, send an error toast
-                    sendToast("Error retrieving " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel. Skipping.");
+                    sendWheelToast("Error retrieving " + BluetoothByteList.contentTypeToString(contentType) + ". Skipping.", wheelLoc);
                     Log.e(TAG, "Could not receive " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel.");
                 }
             }.run();
         }
     }
 
-    private void sendDataToWheel(final BluetoothByteList byteListToSend, final int wheelLoc) {
-        mManager.sendBytesToDevice(byteListToSend, wheelLoc);
-
-// Create a BluetoothInteractionThread that will send the data that we want
-//        if (isWheelReady(wheelLoc)) {
-//            new BluetoothInteractionThread(mManager) {
-//                @Override
-//                public void sendingOperations() {
-//                    // Send the information
-//                    manager.sendBytesToDevice(byteListToSend, wheelLoc);
-//                }
-//
-//                @Override
-//                public void timeoutFun(BluetoothByteList.ContentType contentType, int wheelLoc) {
-//                    // If we have timed out, send an error toast
-//                    sendToast("Error retrieving " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel. Skipping.");
-//                    Log.e(TAG, "Could not receive " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel.");
-//                }
-//            }.run();
-//        }
-    }
 
 //    public void onRearConnectionStateChange(boolean connected) {
 //        // Tell the wheelDrawable what the new connection state is (so the wheel color can change)
@@ -753,7 +839,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
             // If this wheel is not connected, do not allow the user to turn on the wheels
             powered = false;
 
-            sendToast("Wheel is not connected, cannot power on");
+            sendWheelToast("Wheel is not connected, cannot power on", wheelLoc);
 
             // If the bluetooth adapter is not on, attempt to turn on bluetooth
             if (!mCurrentBluetoothStatus) {
@@ -762,30 +848,9 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         }
 
         // Send the power data to the wheel
-        sendDataToWheel(new BTC_PowerState(powered).toByteList(), wheelLoc);
+        mManager.sendBytesToDevice(new BTC_PowerState(powered).toByteList(), wheelLoc);
 
-        // Tell the wheelDrawable what the new connection state is (so the wheel color can change
-        wheelDrawable.setPowerState(powered, wheelLoc);
-        wheelSelectView.invalidate();
-
-        // Get the string to change the display to
-        String switchString;
-        if (powered) {
-            switchString = getApplicationContext().getResources().getString(R.string.leds_on);
-        } else {
-            switchString = getApplicationContext().getResources().getString(R.string.leds_off);
-        }
-
-        switch (wheelLoc) {
-            case Constants.ID_FRONT:
-                frontPowerSwitch.setText(switchString);
-                frontPowerSwitch.setChecked(powered);
-                break;
-            case Constants.ID_REAR:
-                rearPowerSwitch.setText(switchString);
-                rearPowerSwitch.setChecked(powered);
-                break;
-        }
+        setPowerStateGUIVal(powered, true, wheelLoc);
     }
 
     private void sendConnectionToast(boolean connected, int id) {
@@ -799,22 +864,27 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         }
 
         // Create the toast message
-        String msg = "A bluetooth device has been " + connectedStr + " from the " + wheelLocToString(id) + " wheel.";
+        String msg = "Bluetooth device has been " + connectedStr;
 
         // Send the toast
-        sendToast(msg);
+        sendWheelToast(msg, id);
     }
 
     private static String wheelLocToString(int wheelLoc) {
         switch (wheelLoc) {
             case Constants.ID_FRONT:
-                return "front";
+                return "Front";
 
             case Constants.ID_REAR:
-                return "rear";
+                return "Rear";
             default:
-                return "";
+                return "Unknown";
         }
+    }
+
+    private void sendWheelToast(String toastStr, int wheelLoc) {
+        // Send a toast message pertaining to a particular wheel
+        sendToast(wheelLocToString(wheelLoc) + " wheel: " + toastStr);
     }
 
     private void sendToast(String toastStr) {
@@ -848,7 +918,6 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
                 // Since we now know what the information was, do different things depending on what we received
                 if (readByteList.isRequest()) {
-                    // TODO SOON: If this is a request, then send back the information that is requested
                     BluetoothByteList byteListToSend = new BluetoothByteList();
                     switch (readByteList.getContentType()) {
                         case BWA:
@@ -865,7 +934,11 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                             }
                             break;
                         case Kalman:
-                            // TODO: Get the current Kalman data, put it into a BTC_Kalman object, and convert that to a byte list
+                            // Get a SharedPreferences object to find the Kalman Data
+                            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+                            // Create a Kalman object from the preferences, and turn it into a byte list
+                            byteListToSend = new BTC_Kalman(prefs).toByteList();
                             break;
 
                         case Brightness:
@@ -894,7 +967,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                     }
 
                     // Send the byteListToSend object!
-                    sendDataToWheel(byteListToSend, readWheelID);
+                    mManager.sendBytesToDevice(byteListToSend, readWheelID);
 
                 } else {
                     // If this is not a request, then save the information that was sent to the Android
@@ -911,20 +984,22 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                             // Create a Kalman object from the byte list that we just received
                             BTC_Kalman newKalman = BTC_Kalman.fromByteList(readByteList);
 
-                            // TODO: Do something with the Kalman object... (probably need Settings to be set up)
+                            // TODO SOON: Do something with the Kalman object...error check?  Perhaps send a toast if anything is not right
 
                             break;
 
                         case Battery:
                             BTC_Battery newBattery = BTC_Battery.fromByteList(readByteList);
 
-                            // TODO: Do something with the Battery object... (probably need to update the GUI)
+                            // Update the GUI
+                            setBatteryGUIVal(newBattery.getBattery(), readWheelID);
 
                             break;
                         case Storage:
                             BTC_Storage newStorage = BTC_Storage.fromByteList(readByteList);
 
-                            // TODO: Do something with the Storage object... (probably need to update the GUI)
+                            // Update the GUI
+                            setStorageGUIVal(newStorage.getRemaining(), newStorage.getTotal(), readWheelID);
                             break;
                         case Brightness:
                             BTC_BrightnessScale newBrightnessScale = BTC_BrightnessScale.fromByteList(readByteList); // Convert the byte list to a Brightness scale
@@ -933,7 +1008,8 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                         case Power:
                             BTC_PowerState newPowerState = BTC_PowerState.fromByteList(readByteList);
 
-                            // TODO: Do something with the Power state object... (probably need Settings to be set up)
+                            // Update the GUI
+                            setPowerStateGUIVal(newPowerState.getPowerState(), false, readWheelID);
                             break;
                     }
                 }
@@ -948,7 +1024,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
                 break;
             case Constants.MESSAGE_TOAST:
-                sendToast(msg.getData().getString(Constants.TOAST));
+                sendWheelToast(msg.getData().getString(Constants.TOAST), msg.arg2);
                 break;
             case Constants.MESSAGE_CONNECTED:
                 // Perform the needed actions if a new device is added to the front or rear

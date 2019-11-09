@@ -98,14 +98,12 @@ ST (4uint) - Number of state variables (3 - position, velocity, acceleration)
 Q (4float) - Q, as a scalar
 R (4float[]) - NO x NO matrix, interpreted as columns first, then rows (i.e. send each row individually, in column order)
 P (4float[]) - ST x ST matrix, interpreted as columns first, then rows (i.e. send each row individually, in column order)
-
 # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
 C == 2 : Brightness scale
 - b_BF1 b_BF2 b_BF3 b_BF4 -
 BF (4float) - Brightness factor, less than or equal to 1, and greater than 0.
-
 # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -113,20 +111,16 @@ C == 3 : Storage
 - b_RE1 b_RE2 b_RE3 b_RE4 | b_TO1 b_TO2 b_TO3 b_TO4 -
 RE (4ulong) - The amount of remaining RAM
 TO (4ulong) - The amount of total RAM
-
-
 # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
 C == 4 : Battery
 - b_BA -
 BA (8uint) - The amount of battery remaining, out of 255.
-
 # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # # # # # # # # # # # # # # # # # # # # # # # # #
 C == 5 : Power [NOTE: NOT YET IMPLEMENTED IN ARDUINO]
 - [P X X X X X X X -
-P (bool) - The power state of the LED strip (0 = off)
-
+P (bool) - The power state of the LED strip, i.e. whether or not the LED's are on or not (0 = off)
 # # # # # # # # # # # # # # # # # # # # # # # # #

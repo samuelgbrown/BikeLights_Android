@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -95,40 +97,47 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
         return br;
     }
 
-    public boolean sendBytesToDevice(final BluetoothByteList rawByteList, final int wheelLoc) {
+    public boolean sendBytesToDevice(final List<BluetoothByteList> byteListList, final List<Integer> wheelLocs) {
+        // A public interface to allow multiple pieces of information to be sent at a time
         boolean status = true; // Start out assuming that the data transfer will go well...
 
         // Create a Bluetooth Interaction Thread, so that all of the writing/checking for confirmations occurs in a separate thread
         new BluetoothInteractionThread(this) {
             @Override
             public void sendingOperations() {
-                // First, initialize the write
-                rawByteList.startWriting();
+                // Go through each byte list in the byteListList object
+                for (int listInd = 0;listInd < byteListList.size();listInd++) {
+                    BluetoothByteList thisByteList = byteListList.get(listInd);
+                    int thisWheelLoc = wheelLocs.get(listInd);
 
-                // Send a single 64-byte message (with 2-byte header)
-                while (!rawByteList.isDoneReading()) {
-                    // First, get the message to be sent
-                    byte[] thisSubMessage = rawByteList.getNextProcessedByteList();
+                    // First, initialize the write
+                    thisByteList.startWriting();
 
-                    // Then, send the processed byte list to the device indicated
-                    try {
-                        switch (wheelLoc) {
-                            case Constants.ID_FRONT:
-                                mFrontManagerThread.write(thisSubMessage);
-                                break;
-                            case Constants.ID_REAR:
-                                mRearManagerThread.write(thisSubMessage);
-                                break;
-                        }
-                    } catch (Exception e) {
-                        // Uh-oh...
-                        Log.e(TAG, "Data transfer to device failed.");
+                    // Send a single 64-byte message (with 2-byte header)
+                    while (!thisByteList.isDoneReading()) {
+                        // First, get the message to be sent
+                        byte[] thisSubMessage = thisByteList.getNextProcessedByteList();
+
+                        // Then, send the processed byte list to the device indicated
+                        try {
+                            switch (thisWheelLoc) {
+                                case Constants.ID_FRONT:
+                                    mFrontManagerThread.write(thisSubMessage);
+                                    break;
+                                case Constants.ID_REAR:
+                                    mRearManagerThread.write(thisSubMessage);
+                                    break;
+                            }
+                        } catch (Exception e) {
+                            // Uh-oh...
+                            Log.e(TAG, "Data transfer to device failed.");
 //                        status = false;
-                    }
+                        }
 
-                    // Wait for a response from the Arduino (TODO: See if the below code works...?)
-                    // TODO ARDUINO SOON: Add confirmation message to Arduino protocol.  Should be sent every single message, or only when ready for new message?  If the latter, add if-statement to next line
-                    waitForData(BluetoothByteList.ContentType.SP_Confirm, wheelLoc);
+                        // Wait for a response from the Arduino (TODO: See if the below code works...?)
+                        // TODO ARDUINO SOON: Add confirmation message to Arduino protocol.  Should be sent every single message (probably should be this, but at end of receiving function, so it's ready to receive new data), or only when ready for new message?  If the latter, add if-statement to next line
+                        waitForData(BluetoothByteList.ContentType.SP_Confirm, thisWheelLoc);
+                    }
                 }
             }
 
@@ -140,6 +149,26 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
         }.run();
 
         return status;
+    }
+
+    public boolean sendBytesToDevice(final BluetoothByteList rawByteList, final int wheelLoc) {
+        // Initialize the byte list and wheel location Lists
+        List<BluetoothByteList> byteListList = new ArrayList<>(1);
+        byteListList.add(rawByteList);
+
+        List<Integer> wheelLocs = new ArrayList<>(1);
+        wheelLocs.add(wheelLoc);
+
+        // Send the data to the devices
+        return sendBytesToDevice(byteListList, wheelLocs);
+    }
+
+    public boolean sendBytesToDevice(final List<BluetoothByteList> byteListList, final int wheelLoc) {
+        // To send many pieces of information to the same wheel
+        List<Integer> wheelLocs = new ArrayList<>(Collections.nCopies(byteListList.size(), wheelLoc));
+
+        // Send the data to the devices
+        return sendBytesToDevice(byteListList, wheelLocs);
     }
 
     public void requestDataFromWheel(BluetoothByteList.ContentType content, int wheelLoc) {

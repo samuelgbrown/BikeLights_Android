@@ -1,5 +1,7 @@
 package to.us.suncloud.bikelights.common.Bluetooth;
 
+import android.content.SharedPreferences;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +22,70 @@ public class BTC_Kalman {
         this.R = R;
         this.P = P;
     }
+
+    public BTC_Kalman(SharedPreferences preferences) {
+        // Initialize the Kalman object using a preferences object (from this application...don't get smart with me)
+        //        this.n_obs = Integer.parseInt(preferences.getString("kalman_obs", "100"));
+        //        this.n_sta = Integer.parseInt(preferences.getString("kalman_sta", "100"));
+
+        // Extract Q
+        Q = Float.parseFloat(preferences.getString("kalman_q", "100.0"));
+
+        // Extract P diagonal values (you know...the important bits)
+        List<Float> PDiag = new ArrayList<>(n_sta); // Initialize the capacity (not the size!)
+        PDiag.add(Float.valueOf(preferences.getString("kalman_p_1", "0")));
+        PDiag.add(Float.parseFloat(preferences.getString("kalman_p_2", "1")));
+        PDiag.add(Float.parseFloat(preferences.getString("kalman_p_3", "10")));
+
+        // Extract R diagonal values
+        List<Float> RDiag = new ArrayList<>(n_obs);
+        RDiag.add(Float.parseFloat(preferences.getString("kalman_r_1", "0.00001")));
+        RDiag.add(Float.parseFloat(preferences.getString("kalman_r_2", "0.00001")));
+
+        // Now that we have extracted the actually interesting values from the preferences object, populate the diagonal of an n_sta (P) and an n_obs (R) matrix with the values we just got
+        // Make P
+        P = new ArrayList<>(n_sta);
+        for (int row = 0; row < n_sta; row++) {
+            // Create a row of P
+            List<Float> thisPRow = new ArrayList<>(n_sta);
+
+            for (int col = 0; col < n_sta; col++) {
+                // If we are on the diagonal (row and column are equal), then populate from our newly extracted values from the preferences.  Otherwise, just add a 0.
+                if (row == col) {
+                    // We are on a diagonal
+                    thisPRow.add(PDiag.get(row));
+                } else {
+                    // We are not on a diagonal
+                    thisPRow.add(0f);
+                }
+            }
+
+            // Add the newly populated row
+            P.add(thisPRow);
+        }
+
+        // Make R
+        R = new ArrayList<>(n_obs);
+        for (int row = 0; row < n_obs; row++) {
+            // Create a row of R
+            List<Float> thisRRow = new ArrayList<>(n_obs);
+
+            for (int col = 0; col < n_obs; col++) {
+                // If we are on the diagonal (row and column are equal), then populate from our newly extracted values from the preferences.  Otherwise, just add a 0.
+                if (row == col) {
+                    // We are on a diagonal
+                    thisRRow.add(RDiag.get(row));
+                } else {
+                    // We are not on a diagonal
+                    thisRRow.add(0f);
+                }
+            }
+
+            // Add the newly populated row
+            R.add(thisRRow);
+        }
+    }
+
 
     public int getN_obs() {
         return n_obs;
@@ -57,18 +123,18 @@ public class BTC_Kalman {
         rawByteList.addBytes(qBytes);
 
         // Next, send the matrix R
-        for (int row = 0;row < n_obs;row++) {
+        for (int row = 0; row < n_obs; row++) {
             List<Float> thisRRow = R.get(row);
-            for (int col = 0; col < n_obs;col++) {
+            for (int col = 0; col < n_obs; col++) {
                 // Send each value of R, one at a time
                 rawByteList.addBytes(ByteMath.putFloatToByteArray(thisRRow.get(col)));
             }
         }
 
         // Finally, send the matrix P
-        for (int row = 0;row < n_sta;row++) {
+        for (int row = 0; row < n_sta; row++) {
             List<Float> thisPRow = P.get(row);
-            for (int col = 0; col < n_sta;col++) {
+            for (int col = 0; col < n_sta; col++) {
                 // Send each value of P, one at a time
                 rawByteList.addBytes(ByteMath.putFloatToByteArray(thisPRow.get(col)));
             }
@@ -93,10 +159,10 @@ public class BTC_Kalman {
         float Q = ByteMath.getFloatFromByteArray(qBytes);
 
         // Next, get the matrix R
-        List<List<Float>> R = new ArrayList<List<Float>>(n_obs*n_obs);
-        for (int row = 0;row < n_obs;row++) {
+        List<List<Float>> R = new ArrayList<List<Float>>(n_obs * n_obs);
+        for (int row = 0; row < n_obs; row++) {
             List<Float> thisRRow = new ArrayList<Float>(n_obs); // Create the row to be populated
-            for (int col = 0;col < n_obs;col++) {
+            for (int col = 0; col < n_obs; col++) {
                 List<Byte> thisRBytes = rawByteList.getNextBytes(4); // Get the next set of 4 bytes
                 thisRRow.add(ByteMath.getFloatFromByteArray(thisRBytes)); // Interpret the bytes as a single float
             }
@@ -104,10 +170,10 @@ public class BTC_Kalman {
         }
 
         // Next, get the matrix P
-        List<List<Float>> P = new ArrayList<List<Float>>(n_sta*n_sta);
-        for (int row = 0;row < n_sta;row++) {
+        List<List<Float>> P = new ArrayList<List<Float>>(n_sta * n_sta);
+        for (int row = 0; row < n_sta; row++) {
             List<Float> thisPRow = new ArrayList<Float>(n_sta); // Create the row to be populated
-            for (int col = 0;col < n_sta;col++) {
+            for (int col = 0; col < n_sta; col++) {
                 List<Byte> thisPBytes = rawByteList.getNextBytes(4); // Get the next set of 4 bytes
                 thisPRow.add(ByteMath.getFloatFromByteArray(thisPBytes)); // Interpret the bytes as a single float
             }
