@@ -1,7 +1,9 @@
 package to.us.suncloud.bikelights.common.WheelView;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -55,6 +57,7 @@ public class ImageModFragment extends DialogFragment {
     // Parameters that the GUI keeps track of
 
     // Parameters related to the pattern
+    int thisNumLEDs; // The number of LEDs as known by this fragment
     ArrayList<Integer> originalImage; // A copy of the original image
     ArrayList<Integer> slice; // The "slice" of the image that will be applied to the originalImage
     ArrayList<Color_> colorList; // The list of Color_'s that the "originalImage" and "slice" indexes into
@@ -168,9 +171,13 @@ public class ImageModFragment extends DialogFragment {
             colorList = new ArrayList<>(palette);
         } else {
             // Uh oh...
-            originalImage = new ArrayList<>(Collections.nCopies(getResources().getInteger(R.integer.num_leds), 0)); // Create a blank image
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+            originalImage = new ArrayList<>(Collections.nCopies(Integer.parseInt(prefs.getString("num_leds", String.valueOf(getResources().getInteger(R.integer.num_leds)))), 0)); // Create a blank image, initialized with the number of LEDs from the preferences (but, if that fails, defaulted to the number of LEDs defined in the xml)
             colorList = (new Bike_Wheel_Animation(getResources().getInteger(R.integer.num_leds))).getPalette(); // Create a new, "blank" ArrayList of Color_'s
         }
+
+        // Get the number of LEDs
+        thisNumLEDs = originalImage.size();
 
     }
 
@@ -710,13 +717,12 @@ public class ImageModFragment extends DialogFragment {
     public ArrayList<Integer> getNewImage() {
         // Render a Bike_Wheel_Animation
         // Set up required parameters
-        int numLEDs = getResources().getInteger(R.integer.num_leds); // Number of LEDs in the wheel
         int centerPatternOffset = -Math.round(slice.size() / 2); // The offset needed to make sure that the center of the slice is located at the first index
         float repeatSliceOffset;
         int thisNumRepeats;
         if (doRepeat) {
             if (doEqualSpacedRepeats) {
-                repeatSliceOffset = (float)numLEDs / (float)numRepeats; // The offset between the centers of each repeat of the pattern
+                repeatSliceOffset = (float) thisNumLEDs / (float)numRepeats; // The offset between the centers of each repeat of the pattern
             } else {
                 repeatSliceOffset = slice.size();
             }
@@ -726,8 +732,8 @@ public class ImageModFragment extends DialogFragment {
             thisNumRepeats = 1;
         }
 
-        // Create a numLEDs size array out of the slice, depending on how it should be repeated.  Simultaneously generate the selected array, which should be selected for all colors in the pattern/slice
-        // TO_DO: If/when pattern is not properly rotated, fix it here. Probably need to add a round(numLEDs/4) offset?
+        // Create a thisNumLEDs size array out of the slice, depending on how it should be repeated.  Simultaneously generate the selected array, which should be selected for all colors in the pattern/slice
+        // TO_DO: If/when pattern is not properly rotated, fix it here. Probably need to add a round(thisNumLEDs/4) offset?
         ArrayList<Integer> newImage = new ArrayList<>(originalImage); // Initialize the newImage as the original image sent to this fragment in the beginning.  Overwrite it with the "processed" slice to produce the new image
 
         for (int repeatNum = 0; repeatNum < thisNumRepeats; repeatNum++) {
@@ -759,13 +765,12 @@ public class ImageModFragment extends DialogFragment {
 
     private ArrayList<Boolean> getSelected() {
         // Produce an isSelected list to update the LEDViewDrawable with the selected LEDs in the image
-        int numLEDs = getResources().getInteger(R.integer.num_leds); // Number of LEDs in the wheel
         int centerPatternOffset = -Math.round(slice.size() / 2); // The offset needed to make sure that the center of the slice is located at the first index
         int repeatSliceOffset;
         int thisNumRepeats;
         if (doRepeat) {
             if (doEqualSpacedRepeats) {
-                repeatSliceOffset = Math.round(numLEDs / numRepeats); // The offset between the centers of each repeat of the pattern
+                repeatSliceOffset = Math.round(thisNumLEDs / numRepeats); // The offset between the centers of each repeat of the pattern
             } else {
                 repeatSliceOffset = slice.size();
             }
@@ -774,7 +779,7 @@ public class ImageModFragment extends DialogFragment {
             repeatSliceOffset = 0;
             thisNumRepeats = 1;
         }
-        ArrayList<Boolean> isSelected = new ArrayList<>(Collections.nCopies(numLEDs, false));
+        ArrayList<Boolean> isSelected = new ArrayList<>(Collections.nCopies(thisNumLEDs, false));
 
         for (int repeatNum = 0; repeatNum < thisNumRepeats; repeatNum++) {
             // Go through each repeat of the slice

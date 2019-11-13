@@ -180,7 +180,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("num_leds"));
-            // TODO SOON: Use values from these settings!!
         }
 
         @Override
@@ -218,8 +217,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             bindPreferenceSummaryToValue(findPreference("kalman_r_1"));
             bindPreferenceSummaryToValue(findPreference("kalman_r_2"));
-
-            // TODO SOON: Use values from these settings!!
         }
 
         @Override

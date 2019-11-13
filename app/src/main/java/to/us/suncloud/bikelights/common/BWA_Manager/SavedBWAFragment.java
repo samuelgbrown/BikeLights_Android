@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import to.us.suncloud.bikelights.R;
+import to.us.suncloud.bikelights.common.Color.Bike_Wheel_Animation;
 import to.us.suncloud.bikelights.common.Color.SavedBWA;
 import to.us.suncloud.bikelights.common.LocalPersistence;
 import to.us.suncloud.bikelights.common.ObservedRecyclerView;
@@ -38,6 +40,7 @@ public class SavedBWAFragment extends DialogFragment {
 
     private savedBWAListener mListener;
     private SavedBWARecyclerViewAdapter adapter;
+    private int curNumLEDs;
 
     ArrayList<SavedBWA> currentSavedBWAs;
     private int startingCount; // Number of BWAs that were in the fragment to begin with
@@ -110,6 +113,9 @@ public class SavedBWAFragment extends DialogFragment {
 
         // Save the number of BWA's that we started with
         startingCount = currentSavedBWAs.size();
+
+        // Get the current number of LEDs (used to compare with bookmarked BWA's, to see if they are compatible with the current settings)
+        curNumLEDs = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("num_leds", String.valueOf(getResources().getInteger(R.integer.num_leds))));
 
         // Finally, show the Fragment
         show(fm, tag);
@@ -200,11 +206,19 @@ public class SavedBWAFragment extends DialogFragment {
                     if (adapter.hasSelection()) {
                         // If the user HAS selected a BWA...
 
-                        // Send the BWA back to the calling Activity
-                        mListener.receiveSelectedBWA(adapter.getSelectedBWA(), wheelLocation);
+                        // Check if the user is ALLOWED to choose this bookmark (TODO: Perhaps I should put an indication of the number of LEDs for the bookmarks, perhaps only if they are not equal to the current number of LEDs (man, this is SUCH an edge case...))
+                        SavedBWA curSelectedBWA = adapter.getSelectedBWA();
+                        int curSelectedBWANumLEDs = curSelectedBWA.getBWA().sizeImage();
+                        if (curNumLEDs == curSelectedBWANumLEDs) {
+                            // Send the BWA back to the calling Activity
+                            mListener.receiveSelectedBWA(adapter.getSelectedBWA(), wheelLocation);
 
-                        // Save the BWAs to file and close the dialog
-                        saveBWAsAndClose();
+                            // Save the BWAs to file and close the dialog
+                            saveBWAsAndClose();
+                        } else {
+                            // If the number of LEDs in the Settings is NOT equal to the size of the image in the selected BWA, then let the user know how silly they are
+                            Toast.makeText(getContext(), "Could not use the selected pattern, the number of LEDs (" + curSelectedBWANumLEDs + ") is incompatible with the current setting (" + curNumLEDs + ").", Toast.LENGTH_SHORT).show();
+                        }
                     } else {
                         // Let the user know that they're a dumbass
                         Toast.makeText(getContext(), "Select an animation to assign!", Toast.LENGTH_SHORT).show();

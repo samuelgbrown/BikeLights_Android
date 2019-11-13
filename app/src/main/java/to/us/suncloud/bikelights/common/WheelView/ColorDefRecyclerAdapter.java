@@ -276,7 +276,7 @@ public class ColorDefRecyclerAdapter extends ColorDefRecyclerView.Adapter<ColorD
 
                     @Override
                     public void onNothingSelected(AdapterView<?> parent) {
-                        // TODO: SAM: Do nothing, I think?  Test.
+                        // TO_DO: SAM: Do nothing, I think?  Test.
                     }
                 });
 

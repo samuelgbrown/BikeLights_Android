@@ -48,7 +48,7 @@ public class Color_dVel extends Color_d {
 
     @Override
     List<Byte> getTByteCode(int i) {
-        return ByteMath.putFloatToByteArray(getColorObjMeta(i).getT()); // TODO: ...wtf am I doing with the vel-based color?  Is it a float, or fucking not?
+        return ByteMath.putFloatToByteArray(getColorObjMeta(i).getT());
     }
 
     // Old Protocol Buffer functions

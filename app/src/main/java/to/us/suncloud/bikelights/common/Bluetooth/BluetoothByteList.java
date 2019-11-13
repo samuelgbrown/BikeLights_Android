@@ -40,7 +40,6 @@ public class BluetoothByteList {
 
     public BluetoothByteList(byte[] incomingProcessedyteList, int numBytes) {
         // Extract the "raw" byte list from the "processed" byte list that we just received from the Arduino (i.e. strip off connection-level metadata and store the rest)
-        // TODO: May need to take into account the fact that only 64-bytes get sent at a time?  Make into a non-constructor function and keep track of where in the message we are?
 
         // Extract the header information
         request = ByteMath.getBoolFromByte(incomingProcessedyteList[0], 7);
@@ -179,7 +178,7 @@ public class BluetoothByteList {
     public byte[] getNextProcessedByteList() {
         // Do the processing on this byte list, adding in headers every 64 bytes as needed.
         // Returns a single 64-byte message, with header included. Subsequent calls will return each following message
-        // TODO: Initialize a full write out with startWriting(), which will return the total number of 64-byte blocks to be sent, and each call to this function will return the next block, which the calling function can send once we hear back from the Arduino that it's ready
+        // Initialize a full write out with startWriting(), which will return the total number of 64-byte blocks to be sent, and each call to this function will return the next block, which the calling function can send once we hear back from the Arduino that it's ready
         // Create a byte list to send
         List<Byte> outList = new ArrayList<>(NUM_TOTAL_BYTES_PER_MESSAGE); // Preallocate the output byte list
 

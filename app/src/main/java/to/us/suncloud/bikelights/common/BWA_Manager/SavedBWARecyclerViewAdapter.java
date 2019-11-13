@@ -164,7 +164,7 @@ public class SavedBWARecyclerViewAdapter extends ObservedRecyclerView.Adapter<Sa
                 nameView.setTypeface(null, Typeface.ITALIC);
             }
 
-            // TODO: Eventually, a list of "pre-bookmarked" animations may be put in, in which case they cannot be deleted
+            // TODO Later: Eventually, a list of "pre-bookmarked" animations may be put in, in which case they cannot be deleted
             remove.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

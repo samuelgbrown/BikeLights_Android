@@ -399,11 +399,11 @@ public class Bike_Wheel_Animation implements Serializable {
         rawByteList.startReading(); // Set the pointer to the beginning of the byte list
 //        int curListLoc = 0; // A counter to keep track of how far into the rawByteList we are
         // First, extract the number of LEDs and the size of the Color_ palette
-        int numLEDs = rawByteList.getByte();
+        int thisBWANumLEDs = rawByteList.getByte();
         int numColors = rawByteList.getByte();
 
         // Initialize a new Bike_Wheel_Animation
-        Bike_Wheel_Animation bwa = new Bike_Wheel_Animation(numLEDs);
+        Bike_Wheel_Animation bwa = new Bike_Wheel_Animation(thisBWANumLEDs);
 
         // Create and populate the palette
         ArrayList<Color_> palette = new ArrayList<>(numColors);
@@ -499,8 +499,8 @@ public class Bike_Wheel_Animation implements Serializable {
 
 
         // Extract the main image
-        int numBytesInIncomingImage = (int) Math.ceil(((double) numLEDs) / 2.0);
-        ArrayList<Integer> mainImage = new ArrayList<>(numLEDs);
+        int numBytesInIncomingImage = (int) Math.ceil(((double) thisBWANumLEDs) / 2.0);
+        ArrayList<Integer> mainImage = new ArrayList<>(thisBWANumLEDs);
         for (int byteNum = 0; byteNum < numBytesInIncomingImage; byteNum++) {
             // Get a new byte from the incoming list
             byte thisByte = rawByteList.getByte();
@@ -537,7 +537,7 @@ public class Bike_Wheel_Animation implements Serializable {
             bwa.setImageIdleMeta(idleImageMeta);
 
             // Extract the idle image
-            ArrayList<Integer> idleImage = new ArrayList<>(numLEDs);
+            ArrayList<Integer> idleImage = new ArrayList<>(thisBWANumLEDs);
             for (int byteNum = 0; byteNum < numBytesInIncomingImage; byteNum++) {
                 // Get a new byte from the incoming list
                 byte thisByte = rawByteList.getByte();

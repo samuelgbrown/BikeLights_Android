@@ -254,7 +254,6 @@ public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<Blue
         }
 
         private void updateViewHolderGUI() {
-            // TODO: Make animations? Because I freaking can?
             if (mConnecting) {
                 mConnectingView.setVisibility(View.VISIBLE);
             } else {

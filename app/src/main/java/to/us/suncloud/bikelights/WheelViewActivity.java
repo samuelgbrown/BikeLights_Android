@@ -336,7 +336,7 @@ public class WheelViewActivity extends AppCompatActivity implements ModColorFrag
         Bike_Wheel_Animation newBWA = getNewBikeWheelAnimation();
         intent.putExtra(MainActivity.BIKE_WHEEL_ANIMATION, getNewBikeWheelAnimation()); // The list of Color_'s, the images (of both main and idle, if needed), and image meta data
 
-        // TODO: Send the imagestack back, so the user can preserve their undo/redo buffer?
+        // TODO LATER: Send the imagestack back, so the user can preserve their undo/redo buffer?
         // Set the result
         setResult(Activity.RESULT_OK, intent);
 

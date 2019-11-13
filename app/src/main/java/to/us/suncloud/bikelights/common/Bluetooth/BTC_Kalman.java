@@ -183,4 +183,17 @@ public class BTC_Kalman {
         // Finally, create the BTC_Kalman object, and return it
         return new BTC_Kalman(n_obs, n_sta, Q, R, P);
     }
+
+    public boolean isEqual(Object o) {
+        if (o instanceof BTC_Kalman) {
+            BTC_Kalman k = (BTC_Kalman) o;
+            return n_sta == k.n_sta &&
+                    n_obs == k.n_obs &&
+                    Q == k.Q &&
+                    R.equals(k.R) &&
+                    P.equals(k.P);
+        } else {
+            return false;
+        }
+    }
 }

@@ -34,7 +34,7 @@ import to.us.suncloud.bikelights.R;
 // * Use the {@link BluetoothFragment#newInstance} factory method to
 // * create an instance of this fragment.
 // */
-public class BluetoothFragment extends DialogFragment implements BluetoothMasterHandler.HandlerInt {
+public class BluetoothFragment extends DialogFragment { //implements BluetoothMasterHandler.HandlerInt {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PAIRED_DEVICES = "pairedDevices";
     private static final String CONNECTION_MANAGER = "ConnectionManager";
@@ -220,9 +220,9 @@ public class BluetoothFragment extends DialogFragment implements BluetoothMaster
         // Register the receiver (for getting Android announcements about Bluetooth Activity)
         getContext().registerReceiver(mReceiver, filter);
 
-        // TODO: May not need to be a Message Handler?
-        // Register this new fragment to the ConnectionManager (for getting custom Bluetooth announcements about the connection)
-        mManager.registerHandler(this);
+        // TO_DO: May not need to be a Message Handler?
+//        // Register this new fragment to the ConnectionManager (for getting custom Bluetooth announcements about the connection)
+//        mManager.registerHandler(this);
 
         // Start device discovery
         startDiscovery();
@@ -307,15 +307,13 @@ public class BluetoothFragment extends DialogFragment implements BluetoothMaster
         // Unregister the receiver (for getting Android announcements about Bluetooth Activity)
         getContext().unregisterReceiver(mReceiver);
 
-        // Unregister this new fragment to the ConnectionManager (for getting custom Bluetooth announcements about the connection)
-        mManager.unregisterHandler(this);
+//        // Unregister this new fragment to the ConnectionManager (for getting custom Bluetooth announcements about the connection)
+//        mManager.unregisterHandler(this);
     }
 
-    public void handleMessage(Message msg) {
-        // If the ConnectionManager sends a message through Handler, it will end up here after the handler is done with it
-
-
-    }
+//    public void handleMessage(Message msg) {
+//        // If the ConnectionManager sends a message through Handler, it will end up here after the handler is done with it
+//    }
 
 //    /**
 //     * This interface must be implemented by activities that contain this

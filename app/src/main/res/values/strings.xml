@@ -22,6 +22,7 @@
 
     <string name="pref_header_leds">LED Preferences</string>
     <string name="pref_num_leds">Number of LEDs</string>
+    <string name="pref_summary_num_leds">WARNING: Changing this will clear current patterns!</string>
     <string name="pref_default_num_leds">120</string>
 
     <string name="pref_header_kalman">Kalman Preferences</string>

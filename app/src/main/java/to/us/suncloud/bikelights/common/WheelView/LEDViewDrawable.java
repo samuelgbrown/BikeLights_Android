@@ -26,7 +26,6 @@ import java.util.TimerTask;
 
 import to.us.suncloud.bikelights.R;
 import to.us.suncloud.bikelights.common.Color.Color_;
-import to.us.suncloud.bikelights.common.Color.Bike_Wheel_Animation;
 import to.us.suncloud.bikelights.common.Color.Color_Static;
 
 public class LEDViewDrawable extends Drawable implements Serializable {
@@ -50,8 +49,8 @@ public class LEDViewDrawable extends Drawable implements Serializable {
 
     private int rotationOffset = 0; // The rotational offset of the image on the LED wheel
 
-    private static final int numLEDs = 120;
-    private ArrayList<Boolean> selection = new ArrayList<>(Collections.nCopies(numLEDs, false)); // The current index in image that is selected (-1 represents no selection)
+    private int thisNumLEDs;
+    private ArrayList<Boolean> selection = new ArrayList<>(Collections.nCopies(thisNumLEDs, false)); // The current index in image that is selected (-1 represents no selection)
     //    private Bike_Wheel_Animation bikeWheelAnimation; // The color list that the drawable will use to draw the wheel
     private ArrayList<Color_> palette; // The palette of Color_'s that are possible to use
     private ArrayList<Integer> image;  // The image that will be drawn
@@ -61,6 +60,7 @@ public class LEDViewDrawable extends Drawable implements Serializable {
 
     public LEDViewDrawable(final View wheelView, int numLEDs) {
         this.wheelView = wheelView;
+        this.thisNumLEDs = numLEDs;
 
         // Create a timer that will invalidate the view every frame_period seconds
         timer.schedule(new TimerTask() {
@@ -82,7 +82,7 @@ public class LEDViewDrawable extends Drawable implements Serializable {
         backgroundPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
         backgroundPaint.setAntiAlias(true);
 
-//        bikeWheelAnimation = new Bike_Wheel_Animation(numLEDs);
+//        bikeWheelAnimation = new Bike_Wheel_Animation(thisNumLEDs);
         // Initialize the image and palette
         palette = new ArrayList<Color_>(Collections.nCopies(1, new Color_Static()));
         image = new ArrayList<>(Collections.nCopies(numLEDs, 0));
@@ -123,6 +123,7 @@ public class LEDViewDrawable extends Drawable implements Serializable {
         int ledWidth = 20; // Width in dp of the LED's to be displayed
         int highlightWidth = 2; // Width in dp of the highlight around selected LED's
 
+        // TODO: Remake the location of the center of the wheels as a function of the min(width, height), so it will work in portrait or landscape mode
         int boundingBoxDiameter = Math.min(width, height); // Get the diameter of the bounding box
         int LEDWheelRad = Math.round(((float) boundingBoxDiameter * diamRatio) / 2); // Get the diameter of the wheel
         int LEDWhiteWheelRad = LEDWheelRad - ledWidth;
@@ -144,11 +145,11 @@ public class LEDViewDrawable extends Drawable implements Serializable {
 //        testPaint.setColorObj(ContextCompat.getColorObj(wheelView.getContext(), R.color.colorAccent));
 //        testPaint.setAntiAlias(true);
 
-        float sweepAngle = (1 / (float) numLEDs) * 360f; // sweep angle going clockwise
-        for (int i = 0; i < numLEDs; i++) {
+        float sweepAngle = (1 / (float) thisNumLEDs) * 360f; // sweep angle going clockwise
+        for (int i = 0; i < thisNumLEDs; i++) {
             int thisLEDPos = i + rotationOffset;  // Get the LED number that should be drawn at this position, modified by the rotationOffset (which is animated via ObjectAnimator to show the image rotation speed)
 
-            float startAngle = ((float) thisLEDPos / (float) numLEDs) * 360f; // thisLEDPos == 0 (start angle == 0˚) is located on the "right" side of the wheel ("front" side)
+            float startAngle = ((float) thisLEDPos / (float) thisNumLEDs) * 360f; // thisLEDPos == 0 (start angle == 0˚) is located on the "right" side of the wheel ("front" side)
             float midPoint = startAngle + sweepAngle / 2;
 
             // Define the specific start/sweep angles that will be used
@@ -218,7 +219,7 @@ public class LEDViewDrawable extends Drawable implements Serializable {
                 selection.set(ind, newSelection == getImage().get(ind)); //getBikeWheelAnimation().getIMain(ind)); // Set the selection array to true if the new selection index matches the one in the Image, and false otherwise
             }
         } else {
-            selection = new ArrayList<>(Collections.nCopies(numLEDs, false));
+            selection = new ArrayList<>(Collections.nCopies(thisNumLEDs, false));
             Log.e(TAG, "Received newSelection out of bounds of image.");
         }
 
@@ -227,7 +228,7 @@ public class LEDViewDrawable extends Drawable implements Serializable {
     }
 
     public void setSelection(ArrayList<Boolean> newSelection) {
-        if (newSelection.size() == numLEDs) {
+        if (newSelection.size() == thisNumLEDs) {
             selection = newSelection; // Set the new selection
         }
     }

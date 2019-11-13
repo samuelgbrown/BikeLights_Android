@@ -101,6 +101,17 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
         // A public interface to allow multiple pieces of information to be sent at a time
         boolean status = true; // Start out assuming that the data transfer will go well...
 
+        // Error checks
+        if (byteListList.size() != wheelLocs.size()) {
+            // If the two incoming Lists are not the same size, then return an error condition
+            return false;
+        }
+
+        if (byteListList.size() == 0) {
+            // If the incoming Lists are of size 0, then don't send any information (but return a non-error anyway)
+            return true;
+        }
+
         // Create a Bluetooth Interaction Thread, so that all of the writing/checking for confirmations occurs in a separate thread
         new BluetoothInteractionThread(this) {
             @Override
