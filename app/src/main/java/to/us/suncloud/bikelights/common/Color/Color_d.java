@@ -19,7 +19,7 @@ import to.us.suncloud.bikelights.common.ByteMath;
 public abstract class Color_d extends Color_ {
     //    abstract int getIncrementT(); // Amount to increment t for each new colorObjMeta
     private int nextID = 0;
-    private List<colorObjMeta> c = new ArrayList<>(Collections.nCopies(1, new colorObjMeta(getNewID()))); // Initialize the Color_d with one colorObj
+    private List<colorObjMeta> c = new ArrayList<>(Collections.nCopies(1, new colorObjMeta(getNewColorObjMetaID()))); // Initialize the Color_d with one colorObj
 
     public enum BLEND_TYPE {
         CONSTANT,
@@ -33,7 +33,7 @@ public abstract class Color_d extends Color_ {
         private BLEND_TYPE b = BLEND_TYPE.LINEAR;
 
 //        colorObjMeta() {
-//            ID = getNewID();
+//            ID = getNewColorObjMetaID();
 //        }
 
         colorObjMeta(int newID) {
@@ -213,7 +213,7 @@ public abstract class Color_d extends Color_ {
         this.c = c;
     }
 
-    private int getNewID() {
+    public int getNewColorObjMetaID() {
         return nextID++;
     }
 
@@ -377,7 +377,7 @@ public abstract class Color_d extends Color_ {
         // Ensure that there exists a t == 0 object
         if (c.get(0).getT() != 0) {
             // If the first object is not t == 0, then add a new t == 0 object to the beginning of c (doesn't need error-checking)
-            c.add(0, new colorObjMeta(getNewID()));
+            c.add(0, new colorObjMeta(getNewColorObjMetaID()));
         }
 
         return listChanged;
@@ -408,7 +408,7 @@ public abstract class Color_d extends Color_ {
 
     public void addColorObjImpliedT() {
         // First, create a new colorObjMeta object
-        addColorObjImpliedT(new colorObjMeta(getNewID()));
+        addColorObjImpliedT(new colorObjMeta(getNewColorObjMetaID()));
     }
 
     public void addColorObjImpliedT(colorObjMeta oldC) {
@@ -423,16 +423,16 @@ public abstract class Color_d extends Color_ {
         newT = (c.get(getNumColors() - 1).getT() + tDiff);
 
         // Add the incoming colorObjMeta (oldC), with a new timecode
-        addColorObj(oldC.getColorObj(), oldC.getB(), newT);
+        addColorObjMeta(oldC.getColorObj(), oldC.getB(), newT);
     }
 
-    public void addColorObj(colorObjMeta oldC) {
-        addColorObj(oldC.getColorObj(), oldC.getB(), oldC.getT());
+    public void addColorObjMeta(colorObjMeta oldC) {
+        addColorObjMeta(oldC.getColorObj(), oldC.getB(), oldC.getT());
     }
 
-    public void addColorObj(colorObj newC, BLEND_TYPE newB, long newT) {
-        // Main method for adding a new (i.e. with a unique ID) colorObjMeta of arbitrary value
-        colorObjMeta newColorObjMeta = new colorObjMeta(getNewID()); // Create a new colorObjMeta, so that a new ID is generated
+    public void addColorObjMeta(colorObj newC, BLEND_TYPE newB, long newT) {
+        // Method for adding a new (i.e. with a unique ID) colorObjMeta of arbitrary value
+        colorObjMeta newColorObjMeta = new colorObjMeta(getNewColorObjMetaID()); // Create a new colorObjMeta, so that a new ID is generated
 
         // Save the color, blend type, and T
         newColorObjMeta.setColorObj(newC);
@@ -441,6 +441,44 @@ public abstract class Color_d extends Color_ {
 
         // Add this new colorObjMeta object
         c.add(newColorObjMeta);
+
+        // Sort the list (technically kind of inefficient for adding a large number of colorObjMetas in a row, but...this is me caring.  Could make a new method that adds colorObjs, BLEND_TYPES, and longs that arrive as a list, adding them all, and THEN sorting them...but whatever
+        sortAndVerifyColorList();
+    }
+
+    public void addColorObjMetas(List<colorObjMeta> newCs) {
+        // Add a number of new colorObjMetas by copying the values from the incoming List
+        List<colorObjMeta> newCsCopy = new ArrayList<>(newCs.size());
+
+        // Go through each value in the incoming newC List and make a new colorObjMeta to copy from it (done to assign an ID value to each incoming colorObjMeta, which really should only be done at creation)
+        for (int colorObjInd = 0;colorObjInd < newCs.size(); colorObjInd++) {
+            colorObjMeta thisC = new colorObjMeta(getNewColorObjMetaID()); // Ensure that each has a unique ID
+            thisC.setColorObj(newCs.get(colorObjInd).getColorObj());
+            thisC.setB(newCs.get(colorObjInd).getB());
+            thisC.setT(newCs.get(colorObjInd).getT());
+
+            // Add this new colorObjMeta
+            newCsCopy.add(thisC);
+        }
+
+        // Store the new list
+        setC(newCsCopy);
+
+        // Finally, verify the new list
+        sortAndVerifyColorList();
+    }
+
+    public void setColorObjMeta(colorObj newC, BLEND_TYPE newB, long newT, int index) {
+        // Main method for adding a new (i.e. with a unique ID) colorObjMeta of arbitrary value
+        colorObjMeta newColorObjMeta = new colorObjMeta(getNewColorObjMetaID()); // Create a new colorObjMeta, so that a new ID is generated
+
+        // Save the color, blend type, and T
+        newColorObjMeta.setColorObj(newC);
+        newColorObjMeta.setB(newB);
+        newColorObjMeta.setT(newT);
+
+        // Add this new colorObjMeta object
+        c.set(index, newColorObjMeta);
 
         // Sort the list (technically kind of inefficient for adding a large number of colorObjMetas in a row, but...this is me caring.  Could make a new method that adds colorObjs, BLEND_TYPES, and longs that arrive as a list, adding them all, and THEN sorting them...but whatever
         sortAndVerifyColorList();

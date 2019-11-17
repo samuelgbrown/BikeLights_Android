@@ -31,9 +31,9 @@ public class Bike_Wheel_Animation implements Serializable {
     public Bike_Wheel_Animation(Bike_Wheel_Animation otherList) {
         this.mPalette = otherList.getPalette();
         this.mImageMain = otherList.getImageMain();
-        this.mImageIdle = otherList.getImageIdle();
+        this.mImageIdle = otherList.getImageIdle(); // May return null, if !supportsIdle()
         this.mImageMainMeta = otherList.getImageMainMeta();
-        this.mImageIdleMeta = otherList.getImageIdleMeta();
+        this.mImageIdleMeta = otherList.getImageIdleMeta(); // May return null, if !supportsIdle()
     }
 
     public Bike_Wheel_Animation(int numLEDs) {
@@ -130,11 +130,11 @@ public class Bike_Wheel_Animation implements Serializable {
     }
 
     public ArrayList<Integer> getImageIdle() {
-        if (mImageMainMeta.supportsIdle()) {
+        if (supportsIdle()) {
             return new ArrayList<>(mImageIdle);
         } else {
-            // This shouldn't really happen...
-            return new ArrayList<>(Collections.nCopies(mImageMain.size(), 0));
+//            return new ArrayList<>(Collections.nCopies(mImageMain.size(), 0));
+            return null; // There is no image to return
         }
     }
 
@@ -143,7 +143,11 @@ public class Bike_Wheel_Animation implements Serializable {
     }
 
     public ImageMeta_ getImageIdleMeta() {
-        return mImageIdleMeta.clone();
+        if (supportsIdle()) {
+            return mImageIdleMeta.clone();
+        } else {
+            return null;
+        }
     }
 
 //    public void setImageMain(ArrayList<Integer> indsToSet, int valToSet) {
@@ -190,7 +194,7 @@ public class Bike_Wheel_Animation implements Serializable {
 
     public void setImageIdleMeta(ImageMeta_ imageMeta) {
         // If the main image supports an idle, then add the new one
-        if (mImageMainMeta.supportsIdle()) {
+        if (supportsIdle()) {
             this.mImageIdleMeta = imageMeta;
         }
 
@@ -223,7 +227,7 @@ public class Bike_Wheel_Animation implements Serializable {
         // This method is only used in the ImageDefinePagerAdapter, where a Bike_Wheel_Animation is used specifically to hold onto image data and metadata; it is not meant to represent a full BWA. (I know that's not exactly proper, but whatever...)
         // Therefore, this method is used ONLY in that context, and is a bit shortcut-y
 
-        if (mImageMainMeta.supportsIdle()) {
+        if (supportsIdle()) {
             ImageMeta_ newImageMeta_;
             switch (imageMetaType) {
                 // Left as a switch statement for future compatibility, in case of other idle image types being added
@@ -245,7 +249,7 @@ public class Bike_Wheel_Animation implements Serializable {
             maxNumColors = Math.max(maxNumColors, mImageMain.get(i)); // Find the maximum index in colors that is referred to in image
         }
 
-        if (mImageMainMeta.supportsIdle()) {
+        if (supportsIdle()) {
             for (int i = 0; i < mImageIdle.size(); i++) {
                 maxNumColors = Math.max(maxNumColors, mImageIdle.get(i)); // Find the maximum index in colors that is referred to in image
             }
@@ -277,7 +281,7 @@ public class Bike_Wheel_Animation implements Serializable {
 
     private void checkIdle() {
         // Ensure that, iff the current ImageMeta_ requires an idle animation, one exists
-        if (mImageMainMeta.supportsIdle()) {
+        if (supportsIdle()) {
             // There should be an idle
             if (mImageIdle == null) {
                 mImageIdle = new ArrayList<>(Collections.nCopies(mImageMain.size(), 0)); // Make a blank idle image
@@ -305,12 +309,21 @@ public class Bike_Wheel_Animation implements Serializable {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Bike_Wheel_Animation) {
-            // If the Palette, Idle Image, Main Image, and Image Meta are all equivalent, then the two objects are equivalent
+            // If the Palette, Idle Image, Main Image, Main Image Meta, and Idle Image Meta are all equivalent, then the two objects are equivalent
             boolean pEqual = getPalette().equals(((Bike_Wheel_Animation) obj).getPalette());
-            boolean idleEqual = getImageIdle().equals(((Bike_Wheel_Animation) obj).getImageIdle());
             boolean mainEqual = getImageMain().equals(((Bike_Wheel_Animation) obj).getImageMain());
-            boolean metaEqual = getImageMainMeta().equals(((Bike_Wheel_Animation) obj).getImageMainMeta());
-            return pEqual && idleEqual && mainEqual && metaEqual;
+            boolean metaMainEqual = getImageMainMeta().equals(((Bike_Wheel_Animation) obj).getImageMainMeta());
+
+            // Check the idle elements, if needed
+            boolean allIdleEqual = true;
+            if (supportsIdle()) {
+                boolean idleEqual = getImageIdle().equals(((Bike_Wheel_Animation) obj).getImageIdle());
+                boolean idleMetaEqual = getImageIdleMeta().equals(((Bike_Wheel_Animation) obj).getImageIdleMeta());
+                allIdleEqual = idleEqual && idleMetaEqual;
+            }
+
+            // Return the result of all equalities
+            return pEqual && allIdleEqual && mainEqual && metaMainEqual;
         } else {
             return false;
         }
@@ -318,6 +331,10 @@ public class Bike_Wheel_Animation implements Serializable {
 
     public boolean isEmpty() {
         return this.equals(new Bike_Wheel_Animation(sizeImage()));
+    }
+
+    public boolean supportsIdle() {
+        return mImageMainMeta.supportsIdle();
     }
 
     // New byte-level manipulation code
@@ -337,7 +354,7 @@ public class Bike_Wheel_Animation implements Serializable {
         // Finally, encode the images information
         // Start with the header for the image
         byte imageHeaderByte = (byte) 0; // Initialize it to zero
-        imageHeaderByte = ByteMath.putBoolToByte(imageHeaderByte, mImageMainMeta.supportsIdle(), 4); // Record whether or not the idle is supported
+        imageHeaderByte = ByteMath.putBoolToByte(imageHeaderByte, supportsIdle(), 4); // Record whether or not the idle is supported
         imageHeaderByte = ByteMath.putDataToByte(imageHeaderByte, mImageMainMeta.getImageTypeByte(), 4, 0);
         byteList.addByte(imageHeaderByte);
 
@@ -358,7 +375,7 @@ public class Bike_Wheel_Animation implements Serializable {
         addImageToByteList(byteList, mImageMain); // Add the main image to the byteList
 
         // If there exists an idle image, add it to the byteList
-        if (mImageMainMeta.supportsIdle()) {
+        if (supportsIdle()) {
             // Put in the type for the idle image (at the moment, only a wheel-relative idle image is supported, but who knows what the future will bring?)
             byteList.addByte(mImageIdleMeta.getImageTypeByte());
 
@@ -399,8 +416,8 @@ public class Bike_Wheel_Animation implements Serializable {
         rawByteList.startReading(); // Set the pointer to the beginning of the byte list
 //        int curListLoc = 0; // A counter to keep track of how far into the rawByteList we are
         // First, extract the number of LEDs and the size of the Color_ palette
-        int thisBWANumLEDs = rawByteList.getByte();
-        int numColors = rawByteList.getByte();
+        int thisBWANumLEDs = rawByteList.getByteAndIter();
+        int numColors = rawByteList.getByteAndIter();
 
         // Initialize a new Bike_Wheel_Animation
         Bike_Wheel_Animation bwa = new Bike_Wheel_Animation(thisBWANumLEDs);
@@ -411,20 +428,19 @@ public class Bike_Wheel_Animation implements Serializable {
             Color_ newColor_; // Make a variable to store the new Color_
 
             // First, get the Color_ type of the next Color_ in the incoming palette
-            int colorType = ByteMath.getNIntFromByte(rawByteList.getByte(), 4, 4);
+            int colorType = ByteMath.getNIntFromByte(rawByteList.getByteAndIter(), 4, 4);
 
-            if (colorType == Constants.COLOR_STATIC) {
+            if (colorType == Proto_ColorType.STATIC) {
                 // Create a new Color_Static from the incoming bytes
-                newColor_ = new Color_Static(); // Make the new Color_ a static Color_
-                colorObj c = new colorObj(rawByteList.getNextBytes(4));
-                palette.add(new Color_Static(c));
+                colorObj c = new colorObj(rawByteList.getBytesAndIter(4)); // Get the colorObj that describes the color
+                newColor_ = new Color_Static(c); // Make the new Color_ a static Color_, described by the above colorObj
             } else {
                 // Create a new Color_d from the incoming bytes
                 switch (colorType) {
-                    case Constants.COLOR_DTIME:
+                    case Proto_ColorType.D_TIME:
                         newColor_ = new Color_dTime();
                         break;
-                    case Constants.COLOR_DSPEED:
+                    case Proto_ColorType.D_VEL:
                         newColor_ = new Color_dVel();
                         break;
                     default:
@@ -432,32 +448,42 @@ public class Bike_Wheel_Animation implements Serializable {
                 }
 
                 // First, get the number of incoming colorObj's
-                int numColorObjs = ByteMath.getNIntFromByte(rawByteList.getByte(), 8, 0);
+                int numColorObjs = ByteMath.getNIntFromByte(rawByteList.getByteAndIter(), 8, 0);
+                List<Color_d.colorObjMeta> colorObjList = new ArrayList<>(numColorObjs);
                 for (int colorObjNum = 0; colorObjNum < numColorObjs; colorObjNum++) {
                     // For each incoming colorObj in the list
 
                     // First, get the colorObj
-                    colorObj c = new colorObj((rawByteList.getNextBytes(4)));
+                    colorObj c = new colorObj(rawByteList.getBytesAndIter(4));
 
                     // Next, get the blend type
-                    int blendTypeInt = ByteMath.getNIntFromByte(rawByteList.getByte(), 8, 0);
+                    int blendTypeInt = ByteMath.getNIntFromByte(rawByteList.getByteAndIter(), 8, 0);
                     BLEND_TYPE blendType = BLEND_TYPE.CONSTANT;
                     switch (blendTypeInt) {
-                        case 0:
+                        case Proto_BlendType.CONSTANT:
                             blendType = BLEND_TYPE.CONSTANT;
                             break;
-                        case 1:
+                        case Proto_BlendType.LINEAR:
                             blendType = BLEND_TYPE.LINEAR;
                             break;
                     }
 
                     // Lastly, get T
-                    long T = ByteMath.getLongIntFromByteArray(rawByteList.getNextBytes(4));
-                    ; // Get the T value (always a long) that will be assigned to the new Color_d
+                    long T = ByteMath.getLongIntFromByteArray(rawByteList.getBytesAndIter(4));
+                    // Get the T value (always a long) that will be assigned to the new Color_d
 
-                    // Finally, create a new colorObjMeta object (to hold the RGB values, the blend value, and the T value), and add it to newColor_
-                    ((Color_d) newColor_).addColorObj(c, blendType, T);
+                    // Finally, create a new colorObjMeta object (to hold the RGB values, the blend value, and the T value), and add it to the colorObjList
+                    Color_d.colorObjMeta newColorObjMeta = new Color_d.colorObjMeta(0); // Initialize with a bogus ID that will be overwritten later in the addColorObjMetas() method
+                    newColorObjMeta.setColorObj(c);
+                    newColorObjMeta.setB(blendType);
+                    newColorObjMeta.setT(T);
+                    colorObjList.add(newColorObjMeta);
+
+                    //                ((Color_d) newColor_).add(c, blendType, T, colorObjNum);
                 }
+
+                // Finally, add the newColorObjMeta list to the newColor_
+                ((Color_d) newColor_).addColorObjMetas(colorObjList);
             }
 
             // Assign the newly created color to the palette
@@ -469,25 +495,25 @@ public class Bike_Wheel_Animation implements Serializable {
 
         // Create and populate the Images and their meta data
         // Read the data from the byte stream
-        byte mainImageMetaDataByte = rawByteList.getByte();
-        byte mainImageParamByte = rawByteList.getByte();
+        byte mainImageMetaDataByte = rawByteList.getByteAndIter();
+        byte mainImageParamByte = rawByteList.getByteAndIter();
 
         // Extract the required information
         boolean imageSupportsIdle = ByteMath.getBoolFromByte(mainImageMetaDataByte, 4); // Does the main image support an idle image?
         int imageTypeMain = ByteMath.getNIntFromByte(mainImageMetaDataByte, 4, 0); // Of what type is the main image?
-        int imageParamMain = ByteMath.getNIntFromByte(mainImageParamByte, 8, 0); // What is the parameter for the main image?
+        int imageParamMain = (int) mainImageParamByte; // What is the parameter for the main image?
 
         ImageMeta_ mainImageMeta;
         switch (imageTypeMain) {
-            case 0:
+            case Proto_ImageType.WREL:
                 // Create a wheel-relative rotation
                 mainImageMeta = new Image_Meta_ConstRot_WRel(imageParamMain);
                 break;
-            case 1:
+            case Proto_ImageType.GREL:
                 // Create a ground-relative rotation
                 mainImageMeta = new Image_Meta_ConstRot_GRel(imageParamMain);
                 break;
-            case 2:
+            case Proto_ImageType.SPINNER:
                 // Create a spinner-type image
                 mainImageMeta = new Image_Meta_Spinner(imageParamMain);
                 break;
@@ -503,7 +529,7 @@ public class Bike_Wheel_Animation implements Serializable {
         ArrayList<Integer> mainImage = new ArrayList<>(thisBWANumLEDs);
         for (int byteNum = 0; byteNum < numBytesInIncomingImage; byteNum++) {
             // Get a new byte from the incoming list
-            byte thisByte = rawByteList.getByte();
+            byte thisByte = rawByteList.getByteAndIter();
 
             // Split the byte into nibbles and add them to the image
             mainImage.add(ByteMath.getNIntFromByte(thisByte, 4, 0)); // Add the first (lower) nibble
@@ -516,17 +542,17 @@ public class Bike_Wheel_Animation implements Serializable {
         // If the image support an idle animation, load it as well
         if (imageSupportsIdle) {
             // Read the data from the byte stream
-            byte idleImageMetaDataByte = rawByteList.getByte();
-            byte idleImageParamByte = rawByteList.getByte();
+            byte idleImageMetaDataByte = rawByteList.getByteAndIter();
+            byte idleImageParamByte = rawByteList.getByteAndIter();
 
             // Extract the required information
             int imageTypeIdle = ByteMath.getNIntFromByte(idleImageMetaDataByte, 8, 0); // Of what type is the idle image?
-            int imageParamIdle = ByteMath.getNIntFromByte(idleImageParamByte, 8, 0); // What is the parameter for the idle image?
+            int imageParamIdle = (int) idleImageParamByte; // What is the parameter for the idle image? (keep as 2's complement TODO: Do the same for the other rotation, and any other signed bytes?)
 
             ImageMeta_ idleImageMeta;
             switch (imageTypeIdle) {
                 // Left as a switch statement for future compatibility, in case other kinds of images are to be added
-                case 0:
+                case Proto_ImageType.WREL:
                     // Create a wheel-relative rotation
                     idleImageMeta = new Image_Meta_ConstRot_WRel(imageParamIdle);
                     break;
@@ -540,7 +566,7 @@ public class Bike_Wheel_Animation implements Serializable {
             ArrayList<Integer> idleImage = new ArrayList<>(thisBWANumLEDs);
             for (int byteNum = 0; byteNum < numBytesInIncomingImage; byteNum++) {
                 // Get a new byte from the incoming list
-                byte thisByte = rawByteList.getByte();
+                byte thisByte = rawByteList.getByteAndIter();
 
                 // Split the byte into nibbles and add them to the image
                 idleImage.add(ByteMath.getNIntFromByte(thisByte, 4, 0)); // Add the first (lower) nibble
@@ -553,6 +579,26 @@ public class Bike_Wheel_Animation implements Serializable {
 
         // Finally, return the object that we just constructed
         return bwa;
+    }
+
+    // The definitions of the color types, as defined in the bluetooth protocol
+    class Proto_ColorType {
+        static final int STATIC = 0;
+        static final int D_TIME = 1;
+        static final int D_VEL = 2;
+    }
+
+    // The definitions of the blend types, as defined in the bluetooth protocol
+    class Proto_BlendType {
+        static final int CONSTANT = 0;
+        static final int LINEAR = 1;
+    }
+
+    // The definitions of the image types, as defined in the bluetooth protocol
+    class Proto_ImageType {
+        static final int WREL = 0;
+        static final int GREL = 1;
+        static final int SPINNER = 2;
     }
 
     // Old Protocol Buffer functions
@@ -583,7 +629,7 @@ public class Bike_Wheel_Animation implements Serializable {
 //                );
 //
 //        // If there is an idle image, add that too
-//        if (mImageMainMeta.supportsIdle()) {
+//        if (supportsIdle()) {
 //            BWAProto.addAllImageIdle(mImageIdle);
 //        }
 //

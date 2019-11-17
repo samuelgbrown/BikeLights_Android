@@ -115,7 +115,7 @@ public class SavedBWAFragment extends DialogFragment {
         startingCount = currentSavedBWAs.size();
 
         // Get the current number of LEDs (used to compare with bookmarked BWA's, to see if they are compatible with the current settings)
-        curNumLEDs = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("num_leds", String.valueOf(getResources().getInteger(R.integer.num_leds))));
+        curNumLEDs = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("num_leds", String.valueOf(context.getResources().getInteger(R.integer.num_leds))));
 
         // Finally, show the Fragment
         show(fm, tag);

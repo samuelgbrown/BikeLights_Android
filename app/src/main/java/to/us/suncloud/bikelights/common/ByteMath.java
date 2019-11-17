@@ -63,6 +63,20 @@ public class ByteMath {
         return ((dataByte >> firstBitLoc) & bitMask) & 0xFF; // Add the & 0xFF to do unsigned conversion magic (only take the first byte)
     }
 
+//    static public List<Integer> getUSBytesFromSBytes(List<Byte> dataBytes) {
+//        // Get an unsigned byte from a signed byte
+//        List<Integer> outputList = new ArrayList<>(dataBytes.size());
+//        for (int byteInd = 0;byteInd < dataBytes.size(); byteInd++) {
+//            outputList.add(getUSByteFromSByte(dataBytes.get(byteInd)));
+//        }
+//
+//        return outputList;
+//    }
+//
+//    static public int getUSByteFromSByte(byte dataByte) {
+//        return getNIntFromByte(dataByte, 8, 0);
+//    }
+
     static public long getLongIntFromByteArray(List<Byte> byteArray) {
         // Transfer the LOWER 4 BYTES to a new 8-byte array, and fill the upper 4 bytes with 0's
         byte[] b = new byte[8];

@@ -1,8 +1,5 @@
 package to.us.suncloud.bikelights.common.Bluetooth;
 
-import android.support.annotation.NonNull;
-import android.support.v4.content.res.TypedArrayUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,28 +90,40 @@ public class BluetoothByteList {
         return rawByteList.get(i);
     }
 
+    public Byte getByteAndIter() {
+        // Get the next byte, and iterate the pointer location
+        return rawByteList.get(getPointerAndIter());
+    }
+
     public Byte getByte() {
-        return rawByteList.get(readingBytePointerLoc);
+         return getByte(readingBytePointerLoc);
     }
 
     public List<Byte> getBytes(int i, int length) {
         // Does NOT iterate any pointer
-        return rawByteList.subList(i, length); // TODO: Check that this is the right call to the function...
+        int correctedLength = Math.min(length, rawByteList.size() - i); // Ensure that we do not try to get too many items from the list
+        return rawByteList.subList(i, i + correctedLength); // TODO: Check that this is the right call to the function...
     }
 
-    public List<Byte> getNextBytes(int length) {
+    public List<Byte> getBytesAndIter(int length) {
         // Iterates the byte pointer
-        int correctedLength = Math.min(length, rawByteList.size() - readingBytePointerLoc); // Ensure that we do not try to get too many items from the list
-        return rawByteList.subList(iterPointer(length), correctedLength); // TODO: Check that this is the right call to the function...
+        int minLength = rawByteList.size() - readingBytePointerLoc;
+        int correctedLength = Math.min(length, minLength); // Ensure that we do not try to get too many items from the list
+        int startInd = getPointerAndIter(correctedLength); // Get the starting location for the sub list
+        return rawByteList.subList(startInd, startInd + correctedLength); // TODO: Check that this is the right call to the function...
     }
 
     public List<Byte> getNextMessage() {
         // Iterates both the byte and message pointers
         writingMessagePointerLoc++; // Iterate the message writing counter
-        return getNextBytes(NUM_RAW_BYTES_PER_MESSAGE); // Returns the next 62 bytes (or less, if there are fewer than that) in the raw byte list, and iterates the byte pointer
+        return getBytesAndIter(NUM_RAW_BYTES_PER_MESSAGE); // Returns the next 62 bytes (or less, if there are fewer than that) in the raw byte list, and iterates the byte pointer
     }
 
-    private int iterPointer(int length) {
+    private int getPointerAndIter() {
+        return getPointerAndIter(1);
+    }
+
+    private int getPointerAndIter(int length) {
         // Iterate readingBytePointerLoc, but return the old value
         int oldPointerVal = readingBytePointerLoc;
         readingBytePointerLoc += length;

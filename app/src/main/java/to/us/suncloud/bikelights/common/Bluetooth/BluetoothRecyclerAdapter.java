@@ -25,12 +25,14 @@ import java.util.Set;
 import to.us.suncloud.bikelights.R;
 import to.us.suncloud.bikelights.common.Constants;
 
-public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<BluetoothRecyclerAdapter.bindViewHolder> {
+public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<BluetoothRecyclerAdapter.bindViewHolder> { //implements BluetoothMasterHandler.HandlerInt{
     private static String TAG = "BluetoothRecyclerAdapter";
 
     private ArrayList<BluetoothDevice> mDeviceList;
     private ConnectionManager mManager; // The connection manager created by the main activity
     Context mContext;
+
+    private BluetoothDevice currentConnectingDevice = null; // The device, if any, that is currently being connected to
 
     // Strings for the emptyText
     private String string_prescan;
@@ -150,6 +152,7 @@ public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<Blue
                     // The user would like to alter the connection status of this device.  Do different things depending on the state of the device
 
                     if (mConnecting) {
+                        // If we are actively attempting to connect to a device
                         // Stop connecting to this device
                         mManager.stopConnectingDevice(mDevice);
 
@@ -160,6 +163,7 @@ public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<Blue
                         updateViewHolderGUI();
                         return;
                     }
+
                     if (mConnectionLocation == Constants.ID_NONE) {
 
                         // The device is not currently assigned to a wheel location

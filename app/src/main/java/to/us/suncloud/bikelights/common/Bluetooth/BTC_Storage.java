@@ -28,10 +28,10 @@ public class BTC_Storage {
         rawByteList.startReading(); // Set the pointer to the beginning of the byte list
 
         // Get the remaining and total storage capacity, both as longs
-        List<Byte> remainingBytes = rawByteList.getNextBytes(4);
+        List<Byte> remainingBytes = rawByteList.getBytesAndIter(4);
         int remaining = (int) ByteMath.getLongIntFromByteArray(remainingBytes);
 
-        List<Byte> totalBytes = rawByteList.getNextBytes(4);
+        List<Byte> totalBytes = rawByteList.getBytesAndIter(4);
         int total = (int) ByteMath.getLongIntFromByteArray(totalBytes);
 
         // Create a new BTC_Storage object from the extracted information, and return it

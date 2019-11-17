@@ -52,7 +52,7 @@ public class ImageModFragment extends DialogFragment {
 
     private static final int ROTATION_OFFSET = 0; // Rotation offset to make the right side of the wheel index 0
 
-    private static final int SLICE_STARTING_SIZE = 10; // The starting width of slice
+    private static final int SLICE_STARTING_SIZE = 5; // The starting width of slice
 
     // Parameters that the GUI keeps track of
 
@@ -171,9 +171,9 @@ public class ImageModFragment extends DialogFragment {
             colorList = new ArrayList<>(palette);
         } else {
             // Uh oh...
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-            originalImage = new ArrayList<>(Collections.nCopies(Integer.parseInt(prefs.getString("num_leds", String.valueOf(getResources().getInteger(R.integer.num_leds)))), 0)); // Create a blank image, initialized with the number of LEDs from the preferences (but, if that fails, defaulted to the number of LEDs defined in the xml)
-            colorList = (new Bike_Wheel_Animation(getResources().getInteger(R.integer.num_leds))).getPalette(); // Create a new, "blank" ArrayList of Color_'s
+            int thisNumLEDs = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("num_leds", String.valueOf(getResources().getInteger(R.integer.num_leds))));
+            originalImage = new ArrayList<>(Collections.nCopies(thisNumLEDs, 0)); // Create a blank image, initialized with the number of LEDs from the preferences (but, if that fails, defaulted to the number of LEDs defined in the xml)
+            colorList = (new Bike_Wheel_Animation(thisNumLEDs)).getPalette(); // Create a new, "blank" ArrayList of Color_'s
         }
 
         // Get the number of LEDs
@@ -222,10 +222,12 @@ public class ImageModFragment extends DialogFragment {
 
     public void setRotation(int newRotation) {
         // Calculate the progress along the slider that this rotation represents
-        int progressVal = newRotation + Math.round(getContext().getResources().getInteger(R.integer.num_leds) / 2);
+
+        int progressVal = newRotation + Math.round(thisNumLEDs / 2);
 
         // If the new rotation would put the rotation value out of range, then ignore it
-        if (progressVal < 0 | getResources().getInteger(R.integer.num_leds) < progressVal) {
+
+        if (progressVal < 0 | thisNumLEDs < progressVal) {
             return;
         }
 
@@ -292,7 +294,7 @@ public class ImageModFragment extends DialogFragment {
         // Prepare interactions for GUI
 
         // Set up the pattern view (to show the current image, as it stands)
-        ledViewDrawable = new LEDViewDrawable(patternView, getResources().getInteger(R.integer.num_leds));
+        ledViewDrawable = new LEDViewDrawable(patternView, thisNumLEDs);
         ledViewDrawable.setPalette(getColorList());
         patternView.setImageDrawable(ledViewDrawable);
 
@@ -322,7 +324,7 @@ public class ImageModFragment extends DialogFragment {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
 //                    // Convert the progress into a rotation
-                    int rotation = progress - Math.round(getContext().getResources().getInteger(R.integer.num_leds) / 2);
+                    int rotation = progress - Math.round(thisNumLEDs / 2);
 //
 
                     // Notify the rest of the GUI and underlying data of the new rotation value
@@ -590,7 +592,7 @@ public class ImageModFragment extends DialogFragment {
         }
 
         // Initialize a new slice
-        ArrayList<Integer> initialSlice = new ArrayList<>(Collections.nCopies(SLICE_STARTING_SIZE, 0)); // Initialize slice with a size of 10 (doesn't really matter all that much what the size is, just needs to be set and the information will be propagated to the rest of the GUI)
+        ArrayList<Integer> initialSlice = new ArrayList<>(Collections.nCopies(SLICE_STARTING_SIZE, 0)); // Initialize slice with a size of 5 (doesn't really matter all that much what the size is, just needs to be set and the information will be propagated to the rest of the GUI)
 
         // Prepare the Pattern RecyclerView for the specific pattern
         LinearLayoutManager layout = new LinearLayoutManager(getContext(), LinearLayout.HORIZONTAL, false);
@@ -613,7 +615,7 @@ public class ImageModFragment extends DialogFragment {
             if (!s.toString().isEmpty()) {
                 try {
                     newVal = Integer.parseInt(s.toString()); // Try to getP the value set in the text field
-                    if (newVal < 0 || getResources().getInteger(R.integer.num_leds) < newVal) {
+                    if (newVal < 0 || thisNumLEDs < newVal) {
                         newVal = numRepeats; // If the value is out of range, then reset it
                     }
                 } catch (NumberFormatException e) {
@@ -638,7 +640,7 @@ public class ImageModFragment extends DialogFragment {
             if (!s.toString().isEmpty()) {
                 try {
                     newVal = Integer.parseInt(s.toString()); // Try to getP the value set in the text field
-                    if (newVal < 0 || getResources().getInteger(R.integer.num_leds) < newVal) {
+                    if (newVal < 0 || thisNumLEDs < newVal) {
                         newVal = slice.size(); // If the value is out of range, then reset it
                     }
                 } catch (NumberFormatException e) {

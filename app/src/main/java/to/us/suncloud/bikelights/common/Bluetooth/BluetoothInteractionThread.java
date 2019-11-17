@@ -43,7 +43,7 @@ public abstract class BluetoothInteractionThread extends Thread implements Bluet
     }
 
     public void waitForData(BluetoothByteList.ContentType content, int wheelLoc) {
-        // This function will wait for a specific type of content from the specified wheel
+        // This function will wait for a specific type of content from the specified wheel (if we receive the specified data, then the handleMessage() function will break us out of the loop)
         curWaitingContent = content;
         curWaitingWheelLoc = wheelLoc;
         isWaiting = true;

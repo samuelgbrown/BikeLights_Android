@@ -13,7 +13,7 @@ public class Image_Meta_ConstRot_WRel extends Image_Meta_ConstRot_ {
 
     @Override
     public int getImageType() {
-        return Constants.IMAGE_CONSTROT_GREL;
+        return Constants.IMAGE_CONSTROT_WREL;
     }
 
     @Override

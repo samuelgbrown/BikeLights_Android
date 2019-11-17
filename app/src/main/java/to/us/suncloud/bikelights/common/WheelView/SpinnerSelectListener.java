@@ -19,7 +19,8 @@ public class SpinnerSelectListener extends AppCompatSpinner {
     public void setSelection(int position) {
         super.setSelection(position);
         if (listener != null)
-            listener.onItemSelected(null, null, position, 0);
+//            listener.onItemSelected(null, null, position, 0);
+            listener.onItemSelected(this, getChildAt(position), position, getAdapter().getItemId(position));
     }
 
     public void setListener(OnItemSelectedListener listener) {

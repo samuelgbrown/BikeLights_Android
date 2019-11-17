@@ -2,6 +2,8 @@ package to.us.suncloud.bikelights;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
@@ -31,13 +33,14 @@ import to.us.suncloud.bikelights.common.Color.Color_;
 import to.us.suncloud.bikelights.common.Color.SavedBWA;
 import to.us.suncloud.bikelights.common.Constants;
 import to.us.suncloud.bikelights.common.LocalPersistence;
+import to.us.suncloud.bikelights.common.WheelView.ImageDefineFragment;
 import to.us.suncloud.bikelights.common.WheelView.ImageDefinePagerAdapter;
 import to.us.suncloud.bikelights.common.Color.Bike_Wheel_Animation;
 import to.us.suncloud.bikelights.common.ObservedRecyclerView;
 import to.us.suncloud.bikelights.common.WheelView.ModColorFragment;
 import to.us.suncloud.bikelights.common.WheelView.ColorListRecyclerAdapter;
 
-public class WheelViewActivity extends AppCompatActivity implements ModColorFragment.ModColorFragmentListener, ColorListRecyclerAdapter.ColorListInterface { //, ImageDefineFragment.ImageDefineInterface {
+public class WheelViewActivity extends AppCompatActivity implements ModColorFragment.ModColorFragmentListener, ColorListRecyclerAdapter.ColorListInterface, ImageDefineFragment.ImageMetaChangeInterface { //, ImageDefineFragment.ImageDefineInterface {
     private final static String TAG = "WheelViewActivity";
 
     public final static String BWA_FROM_BOOKMARK = "BWA_FROM_BOOKMARK";
@@ -75,7 +78,8 @@ public class WheelViewActivity extends AppCompatActivity implements ModColorFrag
         if (inputBundle.containsKey(MainActivity.BIKE_WHEEL_ANIMATION)) {
             originalBikeWheelAnimation = (Bike_Wheel_Animation) inputBundle.getSerializable(MainActivity.BIKE_WHEEL_ANIMATION);
         } else {
-            originalBikeWheelAnimation = new Bike_Wheel_Animation(getResources().getInteger(R.integer.num_leds));
+            int thisNumLEDs = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString("num_leds", Integer.toString(getResources().getInteger(R.integer.num_leds))));
+            originalBikeWheelAnimation = new Bike_Wheel_Animation(thisNumLEDs);
         }
 
         // Keep track of an untouched version of the original BikeWheelAnimation, while making a version that can be modified and updated by the Activity
@@ -106,10 +110,8 @@ public class WheelViewActivity extends AppCompatActivity implements ModColorFrag
         ViewPager viewPager = findViewById(R.id.image_viewpager);
         imageDefineAdapter = new ImageDefinePagerAdapter(bikeWheelAnimation, getSupportFragmentManager());
         viewPager.setAdapter(imageDefineAdapter);
-
-        // Give the ViewPager to the TabLayout
         TabLayout tabLayout = findViewById(R.id.image_Tabs);
-        tabLayout.setupWithViewPager(viewPager);
+        tabLayout.setupWithViewPager(viewPager); // Give the ViewPager to the TabLayout
 
 //        // Set up the spinner for the Image Meta type (either main or idle)
 //        // TO_DO: May need to move this spinner one fragment down, so that it is associated with either the main or idle images, instead of the BWA
@@ -360,6 +362,12 @@ public class WheelViewActivity extends AppCompatActivity implements ModColorFrag
 //        }
 //    }
 
+
+    @Override
+    public void updatePagerAdapter() {
+        imageDefineAdapter.notifyDataSetChanged();
+        // Uggghhh, so clunkyyyy....
+    }
 
     @Override
     public void setSelected(int selected) {

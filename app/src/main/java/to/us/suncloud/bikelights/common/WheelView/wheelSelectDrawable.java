@@ -46,14 +46,15 @@ public class wheelSelectDrawable extends Drawable {
         int height = canvas.getHeight();
         int xCenter = width/2;
         int yCenter = height/2;
-        int xDiff = 445;
-        int xShift = -5;
-        int yDiff = 150;
-        int wheelRadius = 275;
+        int xDiff = Math.round((float) width/3.23f); //445;
+        int xShift = 0; //-5;
+        int yDiff = width/10; //150;
+        int wheelRadius = Math.round((float) width/5.2f); //275;
         int wheelWidth = 30;
         int crossWidth = 2;
 
         // Calculate the locations of the centers of each wheel
+        // TODO Later: Remake the location of the center of the wheels as a function of the width, so it will work in portrait or landscape mode
         int rearX = xCenter - xDiff + xShift;
         int frontX = xCenter + xDiff + xShift;
 

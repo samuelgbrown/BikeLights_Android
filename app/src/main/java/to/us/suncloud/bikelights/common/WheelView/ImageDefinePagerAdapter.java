@@ -14,7 +14,7 @@ import to.us.suncloud.bikelights.common.Color.Color_;
 
 public class ImageDefinePagerAdapter extends FragmentStatePagerAdapter {
     private String tabTitles[] = new String[]{"Main", "Idle"};
-    private Bike_Wheel_Animation bikeWheelAnimation; // The bikeWheelAnimation (really only hung onto to hold the images for both main and (possibly) idle images)
+    private Bike_Wheel_Animation bikeWheelAnimation; // The bikeWheelAnimation (really only hung onto to hold the images for both main and (possibly) idle images) (Note: This BWA is not output, only the Images/ImageMetas from the fragments are used)
     //    private ArrayList<Color_> palette; // The current color palette to keep track of
 //    ImageMeta_ imageMeta; // The type of image meta (constant speed, spinner) that this adapter must represent
     private ImageDefineFragment fragmentMain; // List of fragments, to keep track of changes to bikeWheelAnimation
@@ -30,23 +30,9 @@ public class ImageDefinePagerAdapter extends FragmentStatePagerAdapter {
 //        this.listener = listener;
     }
 
-    public void setImageMainMeta(int imageMetaType) {
-        // Update the ImageMeta_ type, which will affect which tabs get shown
-        this.bikeWheelAnimation.setImageMainMetaType(imageMetaType);
-
-        // Modify the main fragment's attribute type (The idle type should not have a parameter)
-        if (fragmentMain != null) {
-            fragmentMain.setAttributeType(imageMetaType);
-        }
-
-
-//        baseID+=2;
-        notifyDataSetChanged();
-    }
-
     public void setPalette(ArrayList<Color_> newPalette) {
         // Update the palette for all tabs
-        this.bikeWheelAnimation.setPalette(newPalette);
+//        this.bikeWheelAnimation.setPalette(newPalette);
 
         if (fragmentMain != null) {
             fragmentMain.setPalette(newPalette);
@@ -60,7 +46,7 @@ public class ImageDefinePagerAdapter extends FragmentStatePagerAdapter {
     }
 
     public void removeColorFromPalette(int colorIndToRemove) {
-        this.bikeWheelAnimation.getPalette().remove(colorIndToRemove);
+//        this.bikeWheelAnimation.getPalette().remove(colorIndToRemove);
         if (fragmentMain != null) {
             fragmentMain.removeColorFromPalette(colorIndToRemove);
         }
@@ -82,15 +68,19 @@ public class ImageDefinePagerAdapter extends FragmentStatePagerAdapter {
     }
 
     public Bike_Wheel_Animation putImages(Bike_Wheel_Animation bikeWheelAnimation_toModify) {
-        // Add the images to the new bikeWheelAnimation
-        bikeWheelAnimation_toModify.setImageMain(fragmentMain.getImage());
-        if (bikeWheelAnimation.getImageMainMeta().supportsIdle()) {
-            // If the current bikeWheelAnimation (which represents what the GUI is currently set up to handle) allows an idle, then put it into this new Bike_Wheel_Animation
-            bikeWheelAnimation_toModify.setImageIdle(fragmentIdle.getImage());
-        }
+        if (fragmentMain != null) {
+            // Add the images to the new bikeWheelAnimation
+            bikeWheelAnimation_toModify.setImageMain(fragmentMain.getImage());
 
-        // Add the image meta data
-        bikeWheelAnimation_toModify.setImageMainMeta(fragmentMain.getImageMeta());
+            // Add the image meta data
+            bikeWheelAnimation_toModify.setImageMainMeta(fragmentMain.getImageMeta());
+
+            if (fragmentIdle != null && fragmentMain.getImageMeta().supportsIdle()) {
+                // If the current bikeWheelAnimation (which represents what the GUI is currently set up to handle) allows an idle, then put it into this new Bike_Wheel_Animation
+                bikeWheelAnimation_toModify.setImageIdle(fragmentIdle.getImage());
+                bikeWheelAnimation_toModify.setImageIdleMeta(fragmentIdle.getImageMeta());
+            }
+        }
 
         return bikeWheelAnimation_toModify;
     }
@@ -101,11 +91,11 @@ public class ImageDefinePagerAdapter extends FragmentStatePagerAdapter {
         ImageDefineFragment newFragment;
         if (position == 0) {
             // Main image
-            newFragment = ImageDefineFragment.newInstance(bikeWheelAnimation, false);
+            newFragment = ImageDefineFragment.newInstance(this, bikeWheelAnimation, false);
 //            fragmentMain = newFragment;
         } else {
             // Idle image
-            newFragment = ImageDefineFragment.newInstance(bikeWheelAnimation, true);
+            newFragment = ImageDefineFragment.newInstance(this, bikeWheelAnimation, true);
 //            fragmentIdle = newFragment;
         }
 
@@ -133,15 +123,24 @@ public class ImageDefinePagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public int getItemPosition(@NonNull Object object) {
         if (object.equals(fragmentMain)) {
+            // The main fragment should always be at position 0
             return 0;
         }
 
         if (object.equals(fragmentIdle)) {
-            if (bikeWheelAnimation.getImageMainMeta().supportsIdle()) {
-                return 1;
+            if (fragmentMain != null) {
+                if (fragmentMain.getImageMeta().supportsIdle()) {
+                    // The idle fragment should always be at position 1
+                    return 1;
+                } else {
+                    // If the main image meta does not support and idle image, then this object does not belong in the adapter
+                    return POSITION_NONE;
+                }
             } else {
+                // I the fragmentMain doesn't exist, then something has gone HORRIBLY wrong
                 return POSITION_NONE;
             }
+
         }
         return super.getItemPosition(object);
     }
@@ -154,12 +153,17 @@ public class ImageDefinePagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
-        if (bikeWheelAnimation.getImageMainMeta().supportsIdle()) {
-            // Supports both main and idle
-            return tabTitles.length;
+        if (fragmentMain != null) {
+            if (fragmentMain.getImageMeta().supportsIdle()) {
+                // Supports both main and idle
+                return tabTitles.length;
+            } else {
+                // Supports only idle
+                return tabTitles.length - 1;
+            }
         } else {
-            // Supports only idle
-            return tabTitles.length - 1;
+            // If the main fragment does not exist, then something has gone horribly wrong, but let's feign normalcy...
+            return tabTitles.length;
         }
     }
 

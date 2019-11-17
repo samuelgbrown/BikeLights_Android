@@ -92,7 +92,7 @@
 
             <android.support.constraint.ConstraintLayout
                 android:id="@+id/constrot_container"
-                android:layout_width="217dp"
+                android:layout_width="0dp"
                 android:layout_height="83dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
@@ -131,6 +131,8 @@
                     android:id="@+id/attribute_seekbar"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
                     android:max="@integer/double_max_speed"
                     android:progress="0"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -181,11 +183,9 @@
             android:layout_height="@dimen/wheel_view_height"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
             android:src="@android:color/transparent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/imageTypeContainer"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/image_meta_spinner" />
 

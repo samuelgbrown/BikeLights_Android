@@ -2,12 +2,16 @@ package to.us.suncloud.bikelights.common.WheelView;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.content.res.Configuration;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.PagerAdapter;
+import android.support.v7.widget.AppCompatSpinner;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,10 +48,13 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
 //    public static final String TEST_ID = "TEST_ID";
 //    public static final String ROOT_VIEW = "ROOT_VIEW";
 
+    ImageMetaChangeInterface parentActivity;
+
     private View rootView; // The root view of this Fragment
     private ImageStack imageStack; // The stack that represents all images that have been set up until now (allows undoing and redoing)
     ArrayList<Color_> palette; // A list of colors that the ledViewDrawable can use
     boolean isIdle; // Is this an idle image?
+    int thisNumLEDs; // The number of LEDs on the wheel
 
     private SpinnerSelectListener imageModSpinner; // The spinner that allows a user to paint colors onto the wheel
     private ImageView imageModUndo; // The undo button for modifying the wheel
@@ -66,7 +73,10 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
             save(image);
         }
 
-        ImageStack() {};
+        ImageStack() {
+        }
+
+        ;
 
         ImageStack(ImageStack old) {
             this.imagesList = old.getImagesList();
@@ -230,7 +240,7 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
         super.onConfigurationChanged(newConfig);
     }
 
-    public static ImageDefineFragment newInstance(Bike_Wheel_Animation bikeWheelAnimation, boolean isIdle) {
+    public static ImageDefineFragment newInstance(PagerAdapter parentAdapter, Bike_Wheel_Animation bikeWheelAnimation, boolean isIdle) {
 
         Bundle args = new Bundle();
         args.putSerializable(BIKE_WHEEL_ANIMATION, bikeWheelAnimation);
@@ -256,7 +266,6 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
 //        return super.onCreateView(inflater, container, savedInstanceState);
 
-
         // Inflate the view
 //        if (savedInstanceState != null) {
         if (rootView == null) {
@@ -280,11 +289,12 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
         Bundle args = getArguments();
 
         Bike_Wheel_Animation initializeBikeWheelAnimation;
+        thisNumLEDs = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("num_leds", Integer.toString(getResources().getInteger(R.integer.num_leds))));
 
         if (args.containsKey(BIKE_WHEEL_ANIMATION)) {
             initializeBikeWheelAnimation = (Bike_Wheel_Animation) args.getSerializable(BIKE_WHEEL_ANIMATION);
         } else {
-            initializeBikeWheelAnimation = new Bike_Wheel_Animation(getResources().getInteger(R.integer.num_leds));
+            initializeBikeWheelAnimation = new Bike_Wheel_Animation(thisNumLEDs);
         }
 
         if (args.containsKey(IS_IDLE)) {
@@ -364,11 +374,11 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
         } else {
             imageMetaSpinnerChoice = imageMetaTypeToSpinnerPos(initializeBikeWheelAnimation.getImageMainMeta().getImageType());
         }
-        
+
         imageMetaSpinner.setSelection(imageMetaSpinnerChoice, false); // Set the original image meta type in the GUI
 
         // Set up the drawable for the wheelView image view
-        ledViewDrawable = new LEDViewDrawable(wheelView, getResources().getInteger(R.integer.num_leds));
+        ledViewDrawable = new LEDViewDrawable(wheelView, thisNumLEDs);
         wheelView.setBackground(ledViewDrawable);
 
         // Create an ImageStack and save the input/new image as the first in the stack
@@ -413,14 +423,20 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
         imageModSpinner.setAdapter(new ImageModSpinnerAdapter(getContext(), isIdle));
         imageModSpinner.setSelection(0, false);
         imageModSpinner.setListener(new AdapterView.OnItemSelectedListener() {
+//            boolean check = false;
+
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//                if (check) {
                 // Launch a dialog window, chosen according to the selection, that will allow the user to paint onto the image.
                 FragmentManager fm = getChildFragmentManager(); //getFragmentManager();
                 ImageModSpinnerAdapter.ImageModSpinnerItem itemInfo = (ImageModSpinnerAdapter.ImageModSpinnerItem) parent.getItemAtPosition(position); // Get the information of the current object
 
                 ImageModFragment fragment = ImageModFragment.newInstance(palette, imageStack.currentImage(), itemInfo.itemType, isIdle);
                 fragment.show(fm, "Image Mod Dialog");
+//                }
+
+//                check = true;
             }
 
 
@@ -450,15 +466,20 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
         // Initialize the view
         setPalette(initializeBikeWheelAnimation.getPalette()); // Set the palette
 
+        // Initialize the images and meta data
+        ArrayList<Integer> image;
+        ImageMeta_ imageMeta;
         if (isIdle) {
-            // TODO: Check this...I changed it because I don't think it made sense...?
-            setAttributeType(Constants.IMAGE_CONSTROT_WREL); // Initialize how this fragment should display
-//            setAttributeType(Constants.IMAGE_IDLE); // Initialize how this fragment should display
-            imageStack = new ImageStack(new ArrayList<>(initializeBikeWheelAnimation.getImageIdle())); // Initialize the Image for this fragment
+            image = new ArrayList<>(initializeBikeWheelAnimation.getImageIdle());
+            imageMeta = initializeBikeWheelAnimation.getImageIdleMeta();
         } else {
-            setAttribute(initializeBikeWheelAnimation.getImageMainMeta()); // Set the image meta type and its current value
-            imageStack = new ImageStack(new ArrayList<>(initializeBikeWheelAnimation.getImageMain()));
+            image = new ArrayList<>(initializeBikeWheelAnimation.getImageMain());
+            imageMeta = initializeBikeWheelAnimation.getImageMainMeta();
         }
+
+        setAttribute(imageMeta); // Set the image meta type and its current value
+        imageStack = new ImageStack(image);
+
 
         // Finally, if there was a saved ImageStack, put that in instead
         if (savedInstanceState != null && savedInstanceState.containsKey(IMAGE_STACK)) {
@@ -509,10 +530,10 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
                 storedAttrVals.set(0, curAttrVal);
                 break;
             case Constants.IMAGE_CONSTROT_GREL:
-                storedAttrVals.set(1, curAttrVal);
+                storedAttrVals.set(0, curAttrVal);
                 break;
             case Constants.IMAGE_SPINNER:
-                storedAttrVals.set(2, curAttrVal);
+                storedAttrVals.set(1, curAttrVal);
                 break;
             default:
                 // If the fragment was just initialized, don't save any old values, because they don't exist yet!
@@ -557,6 +578,11 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
             curAttrMin = minVal;
             setAttrValue(attrVal);
         }
+
+        // Finally, attempt to notify the pager adapter (through the WheelViewActivity), so that it can display/remove the Idle image tab
+        if (parentActivity != null) {
+            parentActivity.updatePagerAdapter();
+        }
     }
 
     private void setAttrValue(int newVal) {
@@ -571,7 +597,7 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
         }
 
         if (curAttrType == Constants.IMAGE_CONSTROT_WREL || curAttrType == Constants.IMAGE_CONSTROT_GREL) {
-            int rotEnd = getResources().getInteger(R.integer.num_leds);
+            int rotEnd = thisNumLEDs;
             if (curAttrVal == 0) {
                 // Do not animate the speed if it is 0
                 return;
@@ -741,6 +767,23 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
         if (rotationAnimator != null) {
             rotationAnimator.pause();
         }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        try {
+            parentActivity = (ImageMetaChangeInterface) getActivity();
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Activity must implement the ImageMetaChangeInterface (updatePagerAdapter() must notify the pager adapter of a data set change)");
+        }
+    }
+
+    public interface ImageMetaChangeInterface {
+        // A very stupid and clunky interface to let the ImageDefinePagerAdapter that created this fragment know when the main ImageMeta changes (so it can display the idle image tab only when applicable)
+        // (Unfortunately, there does not seem to be a way to elegantly pass a reference to the ImageDefinePagerAdapter to this Fragment, otherwise that would be the simplest solution to updating ImageDefinePagerAdapter when needed
+        void updatePagerAdapter();
     }
 }
 

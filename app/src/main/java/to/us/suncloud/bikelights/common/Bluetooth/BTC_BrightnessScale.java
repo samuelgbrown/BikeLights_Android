@@ -22,7 +22,7 @@ public class BTC_BrightnessScale {
         rawByteList.startReading(); // Set the pointer to the beginning of the byte list
 
         // Get the brightness scale, as a float
-        List<Byte> brightnessScaleBytes = rawByteList.getNextBytes(4);
+        List<Byte> brightnessScaleBytes = rawByteList.getBytesAndIter(4);
         float brightnessScale = ByteMath.getFloatFromByteArray(brightnessScaleBytes);
 
         // Create a new BTC_BrightnessScale from the extracted information, and return it

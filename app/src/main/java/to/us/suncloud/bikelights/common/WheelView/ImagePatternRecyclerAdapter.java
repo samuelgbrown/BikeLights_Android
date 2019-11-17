@@ -155,8 +155,8 @@ public class ImagePatternRecyclerAdapter extends RecyclerView.Adapter<ImagePatte
     public void setColorList(Bike_Wheel_Animation newColorList) {
         // Update the palette
         colorList = new ArrayList<>(newColorList.sizeImage());
-//        colorAnimatorSets = new ArrayList<>(Collections.nCopies(newColorList.sizeImage(), new AnimatorSet())); // TO_DO: Should this just be changed to be newColorList.numColors() (with no other modification)?
-        colorAnimatorSets = new ArrayList<>(Collections.nCopies(newColorList.numColors(), new AnimatorSet()));
+        colorAnimatorSets = new ArrayList<>(Collections.nCopies(newColorList.sizeImage(), new AnimatorSet())); // TO_DO: Should this just be changed to be newColorList.numColors() (with no other modification)?
+//        colorAnimatorSets = new ArrayList<>(Collections.nCopies(newColorList.numColors(), new AnimatorSet()));
 
         for (int i = 0;i < newColorList.sizeImage();i++) {
             colorList.add(newColorList.getP(newColorList.getIMain(i)));

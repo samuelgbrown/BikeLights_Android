@@ -50,7 +50,7 @@ public class LEDViewDrawable extends Drawable implements Serializable {
     private int rotationOffset = 0; // The rotational offset of the image on the LED wheel
 
     private int thisNumLEDs;
-    private ArrayList<Boolean> selection = new ArrayList<>(Collections.nCopies(thisNumLEDs, false)); // The current index in image that is selected (-1 represents no selection)
+    private ArrayList<Boolean> selection; // The current index in image that is selected (-1 represents no selection)
     //    private Bike_Wheel_Animation bikeWheelAnimation; // The color list that the drawable will use to draw the wheel
     private ArrayList<Color_> palette; // The palette of Color_'s that are possible to use
     private ArrayList<Integer> image;  // The image that will be drawn
@@ -60,7 +60,7 @@ public class LEDViewDrawable extends Drawable implements Serializable {
 
     public LEDViewDrawable(final View wheelView, int numLEDs) {
         this.wheelView = wheelView;
-        this.thisNumLEDs = numLEDs;
+        setThisNumLEDs(numLEDs);
 
         // Create a timer that will invalidate the view every frame_period seconds
         timer.schedule(new TimerTask() {
@@ -86,7 +86,15 @@ public class LEDViewDrawable extends Drawable implements Serializable {
         // Initialize the image and palette
         palette = new ArrayList<Color_>(Collections.nCopies(1, new Color_Static()));
         image = new ArrayList<>(Collections.nCopies(numLEDs, 0));
+
         precalcPaints();
+    }
+
+    public void setThisNumLEDs(int newThisNumLEDs) {
+        this.thisNumLEDs = newThisNumLEDs;
+
+        // Initialize the selection (no selection)
+        selection = new ArrayList<>(Collections.nCopies(thisNumLEDs, false));
     }
 
     public void setAnimationRunning(boolean doRedraws) {
@@ -123,7 +131,6 @@ public class LEDViewDrawable extends Drawable implements Serializable {
         int ledWidth = 20; // Width in dp of the LED's to be displayed
         int highlightWidth = 2; // Width in dp of the highlight around selected LED's
 
-        // TODO: Remake the location of the center of the wheels as a function of the min(width, height), so it will work in portrait or landscape mode
         int boundingBoxDiameter = Math.min(width, height); // Get the diameter of the bounding box
         int LEDWheelRad = Math.round(((float) boundingBoxDiameter * diamRatio) / 2); // Get the diameter of the wheel
         int LEDWhiteWheelRad = LEDWheelRad - ledWidth;
@@ -141,9 +148,6 @@ public class LEDViewDrawable extends Drawable implements Serializable {
 
 //        precalcPaints();
 
-//        Paint testPaint = new Paint();
-//        testPaint.setColorObj(ContextCompat.getColorObj(wheelView.getContext(), R.color.colorAccent));
-//        testPaint.setAntiAlias(true);
 
         float sweepAngle = (1 / (float) thisNumLEDs) * 360f; // sweep angle going clockwise
         for (int i = 0; i < thisNumLEDs; i++) {

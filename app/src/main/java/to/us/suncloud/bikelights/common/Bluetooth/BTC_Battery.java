@@ -21,7 +21,7 @@ public class BTC_Battery {
         rawByteList.startReading(); // Set the pointer to the beginning of the byte list
 
         // Get the battery amount as an int (0-255)
-        byte batteryByte = rawByteList.getByte();
+        byte batteryByte = rawByteList.getByteAndIter();
         int battery = ByteMath.getNIntFromByte(batteryByte, 8, 0);
 
         // Create a new BTC_Battery object from the extracted information, and return it

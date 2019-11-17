@@ -117,9 +117,24 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
             @Override
             public void sendingOperations() {
                 // Go through each byte list in the byteListList object
-                for (int listInd = 0;listInd < byteListList.size();listInd++) {
+                for (int listInd = 0; listInd < byteListList.size(); listInd++) {
                     BluetoothByteList thisByteList = byteListList.get(listInd);
                     int thisWheelLoc = wheelLocs.get(listInd);
+
+                    switch (thisWheelLoc) {
+                        case Constants.ID_FRONT:
+                            if (mFrontManagerThread == null) {
+                                // If we are trying to send something to the front wheel, but we aren't connected, then don't try to send anything
+                                continue;
+                            }
+                            break;
+                        case Constants.ID_REAR:
+                            if (mRearManagerThread == null) {
+                                // If we are trying to send something to the rear wheel, but we aren't connected, then don't try to send anything
+                                continue;
+                            }
+                            break;
+                    }
 
                     // First, initialize the write
                     thisByteList.startWriting();
@@ -154,8 +169,8 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
 
             @Override
             public void timeoutFun(BluetoothByteList.ContentType contentType, int wheelLoc) {
-                sendToast("Timeed out waiting for a confirmation", wheelLoc);
-                Log.e(TAG, "Timeed out waiting for a confirmation");
+                sendToast("Timed out waiting for a confirmation", wheelLoc);
+                Log.e(TAG, "Timed out waiting for a confirmation");
             }
         }.run();
 

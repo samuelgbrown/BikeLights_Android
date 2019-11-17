@@ -150,12 +150,12 @@ public class BTC_Kalman {
         rawByteList.startReading(); // Set the pointer to the beginning of the byte list
 
         // First, get the BTC_Kalman meta data (number of observed and state variables
-        byte numVarsByte = rawByteList.getByte(); // Get the first byte, which contains both n_obs and n_sta
+        byte numVarsByte = rawByteList.getByteAndIter(); // Get the first byte, which contains both n_obs and n_sta
         int n_obs = ByteMath.getNIntFromByte(numVarsByte, 4, 4);
         int n_sta = ByteMath.getNIntFromByte(numVarsByte, 4, 0);
 
         // Next, get Q, which is a float (in 4 bytes)
-        List<Byte> qBytes = rawByteList.getNextBytes(4);
+        List<Byte> qBytes = rawByteList.getBytesAndIter(4);
         float Q = ByteMath.getFloatFromByteArray(qBytes);
 
         // Next, get the matrix R
@@ -163,7 +163,7 @@ public class BTC_Kalman {
         for (int row = 0; row < n_obs; row++) {
             List<Float> thisRRow = new ArrayList<Float>(n_obs); // Create the row to be populated
             for (int col = 0; col < n_obs; col++) {
-                List<Byte> thisRBytes = rawByteList.getNextBytes(4); // Get the next set of 4 bytes
+                List<Byte> thisRBytes = rawByteList.getBytesAndIter(4); // Get the next set of 4 bytes
                 thisRRow.add(ByteMath.getFloatFromByteArray(thisRBytes)); // Interpret the bytes as a single float
             }
             R.add(thisRRow); // Add the newly populated row to the matrix R
@@ -174,7 +174,7 @@ public class BTC_Kalman {
         for (int row = 0; row < n_sta; row++) {
             List<Float> thisPRow = new ArrayList<Float>(n_sta); // Create the row to be populated
             for (int col = 0; col < n_sta; col++) {
-                List<Byte> thisPBytes = rawByteList.getNextBytes(4); // Get the next set of 4 bytes
+                List<Byte> thisPBytes = rawByteList.getBytesAndIter(4); // Get the next set of 4 bytes
                 thisPRow.add(ByteMath.getFloatFromByteArray(thisPBytes)); // Interpret the bytes as a single float
             }
             P.add(thisPRow); // Add the newly populated row to the matrix R

@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import to.us.suncloud.bikelights.R;
+import to.us.suncloud.bikelights.common.Constants;
 
 ///**
 // * A simple {@link Fragment} subclass.
@@ -34,7 +35,7 @@ import to.us.suncloud.bikelights.R;
 // * Use the {@link BluetoothFragment#newInstance} factory method to
 // * create an instance of this fragment.
 // */
-public class BluetoothFragment extends DialogFragment { //implements BluetoothMasterHandler.HandlerInt {
+public class BluetoothFragment extends DialogFragment { // implements BluetoothMasterHandler.HandlerInt {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PAIRED_DEVICES = "pairedDevices";
     private static final String CONNECTION_MANAGER = "ConnectionManager";
@@ -182,9 +183,10 @@ public class BluetoothFragment extends DialogFragment { //implements BluetoothMa
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
+     * <p>
+     * //     * @param param1 Parameter 1.
+     * //     * @param param2 Parameter 2.
      *
-//     * @param param1 Parameter 1.
-//     * @param param2 Parameter 2.
      * @return A new instance of fragment BluetoothFragment.
      */
     public static BluetoothFragment newInstance(ConnectionManager manager) {
@@ -220,7 +222,6 @@ public class BluetoothFragment extends DialogFragment { //implements BluetoothMa
         // Register the receiver (for getting Android announcements about Bluetooth Activity)
         getContext().registerReceiver(mReceiver, filter);
 
-        // TO_DO: May not need to be a Message Handler?
 //        // Register this new fragment to the ConnectionManager (for getting custom Bluetooth announcements about the connection)
 //        mManager.registerHandler(this);
 
@@ -313,6 +314,13 @@ public class BluetoothFragment extends DialogFragment { //implements BluetoothMa
 
 //    public void handleMessage(Message msg) {
 //        // If the ConnectionManager sends a message through Handler, it will end up here after the handler is done with it
+//        switch (msg.what) {
+//            case Constants.MESSAGE_CONNECT_FAILED:
+//                // If there are any bluetooth devices that are currently trying to connect, the connection attempt failed, so reset their Views
+//                break;
+//            case Constants.MESSAGE_CONNECTED:
+//                // A device just successfully connected.  Let both adapters know
+//        }
 //    }
 
 //    /**

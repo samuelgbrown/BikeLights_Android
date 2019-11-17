@@ -37,6 +37,13 @@ public class colorObj implements Serializable {
         w = (byte) c.getW();
     }
 
+//    public colorObj (List<Byte> list) {
+//        r = list.get(0);
+//        g = list.get(1);
+//        b = list.get(2);
+//        w = list.get(3);
+//    }
+
     public colorObj (List<Byte> list) {
         r = list.get(0);
         g = list.get(1);

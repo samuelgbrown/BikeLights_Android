@@ -33,7 +33,7 @@ public class BTC_PowerState {
         rawByteList.startReading(); // Set the pointer to the beginning of the byte list
 
         // Get the battery amount as an int (0-255)
-        byte powerByte = rawByteList.getByte();
+        byte powerByte = rawByteList.getByteAndIter();
         boolean powerState = ByteMath.getBoolFromByte(powerByte, 7);
 
         // Create a new BTC_Battery object from the extracted information, and return it
