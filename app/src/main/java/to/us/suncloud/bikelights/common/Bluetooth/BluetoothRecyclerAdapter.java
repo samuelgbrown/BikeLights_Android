@@ -281,7 +281,7 @@ public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<Blue
                     // For "name view"
                     mNameView.setTypeface(mNameView.getTypeface(), Typeface.BOLD);
                     break;
-                default:
+                case Constants.ID_NONE:
                     // For "wheel view"
                     mWheelView.setVisibility(View.GONE);
 

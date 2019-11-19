@@ -46,7 +46,7 @@ public class AlterConnectionDialog extends DialogFragment {
                 mListener.alterConnectionChoice(Constants.ACTION_DISCONNECT);
             }
         });
-        builder.setPositiveButton(R.string.switch_wheels, new DialogInterface.OnClickListener() {
+        builder.setNeutralButton(R.string.switch_wheels, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 mListener.alterConnectionChoice(Constants.ACTION_SWITCH);

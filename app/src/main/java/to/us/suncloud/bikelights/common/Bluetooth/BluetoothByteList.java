@@ -284,6 +284,8 @@ public class BluetoothByteList {
                 return "Battery Data";
             case Power:
                 return "Power State";
+            case SP_Confirm:
+                return "Confirmation";
             default:
                 return "Unknown Data";
         }

@@ -14,7 +14,8 @@ public class BluetoothMasterHandler extends Handler {
         void handleMessage(Message msg);
     }
 
-    public BluetoothMasterHandler() {}
+    public BluetoothMasterHandler() {
+    }
 
     public void registerHandler(HandlerInt newHandler) {
         if (!mHandlerList.contains(newHandler)) {
@@ -34,8 +35,9 @@ public class BluetoothMasterHandler extends Handler {
         super.handleMessage(msg);
         // Send this it to all registered HandlerInt's for processing
         if (!mHandlerList.isEmpty()) {
-            for (HandlerInt h : mHandlerList) {
-                h.handleMessage(msg);
+//            for (HandlerInt h : mHandlerList) {
+            for (int handlerInd = 0; handlerInd < mHandlerList.size(); handlerInd++) {
+                mHandlerList.get(handlerInd).handleMessage(msg);
             }
         }
 

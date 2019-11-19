@@ -1,5 +1,6 @@
 package to.us.suncloud.bikelights.common.Bluetooth;
 
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
@@ -19,10 +20,13 @@ public abstract class BluetoothInteractionThread extends Thread implements Bluet
     public ConnectionManager manager;
 
     public abstract void sendingOperations(); // A function that must be overwritten by the calling function, which describes the sending/requesting of data
+
     public abstract void timeoutFun(BluetoothByteList.ContentType contentType, int wheelLoc); // Runs if the waitForData function gets timed out (i.e. no data of the given type is received)
 
     @Override
     public void run() {
+        Looper.prepare(); // In case the user wants to do any UI interaction (TODO: Should I instead use the runOnUIThread method, and make a class-specific sendToast function?)
+
         sendingOperations();
 
         // Once we have finished our operation, unregister this handler from the
@@ -42,8 +46,10 @@ public abstract class BluetoothInteractionThread extends Thread implements Bluet
         waitForData(content, wheelLoc);
     }
 
-    public void waitForData(BluetoothByteList.ContentType content, int wheelLoc) {
+    public boolean waitForData(BluetoothByteList.ContentType content, int wheelLoc) {
         // This function will wait for a specific type of content from the specified wheel (if we receive the specified data, then the handleMessage() function will break us out of the loop)
+        // Return value TRUE if successful, FALSE if timed out
+        boolean success = false;
         curWaitingContent = content;
         curWaitingWheelLoc = wheelLoc;
         isWaiting = true;
@@ -60,7 +66,8 @@ public abstract class BluetoothInteractionThread extends Thread implements Bluet
 
                 // Execute the timeout function defined by the user, and break out of this loop (should be a relatively safe fail-state)
                 timeoutFun(content, wheelLoc);
-                break;
+                Log.d(TAG, "Wait for '" + BluetoothByteList.contentTypeToString(content) + "' data unsuccessful; timed out.");
+                return false;
             }
 
             // Otherwise, wait another few milliseconds before checking for data again
@@ -73,6 +80,9 @@ public abstract class BluetoothInteractionThread extends Thread implements Bluet
 
         // Ensure that the thread is no longer in a "waiting" state
         isWaiting = false;
+
+        // If we've reached here, then we've successfully received our data
+        return true;
     }
 
     @Override

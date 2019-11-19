@@ -26,7 +26,7 @@ import java.util.UUID;
 import to.us.suncloud.bikelights.common.Constants;
 
 public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, Serializable {
-    private String TAG = "Connection_Manager";
+    private static final String TAG = "Connection_Manager";
 
     private FragmentActivity context;
 
@@ -104,11 +104,13 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
         // Error checks
         if (byteListList.size() != wheelLocs.size()) {
             // If the two incoming Lists are not the same size, then return an error condition
+            Log.w(TAG, "sendBytesToDevice: Got mismatched data and destination lists.");
             return false;
         }
 
         if (byteListList.size() == 0) {
             // If the incoming Lists are of size 0, then don't send any information (but return a non-error anyway)
+            Log.w(TAG, "sendBytesToDevice: Got size = 0 lists.");
             return true;
         }
 
@@ -121,16 +123,31 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
                     BluetoothByteList thisByteList = byteListList.get(listInd);
                     int thisWheelLoc = wheelLocs.get(listInd);
 
+                    // TODO TESTING
+                    String wheelStr = "unknown";
+                    switch (thisWheelLoc) {
+                        case Constants.ID_FRONT:
+                            wheelStr = "Front";
+                            break;
+                        case Constants.ID_REAR:
+                            wheelStr = "Rear";
+                            break;
+                    }
+
+                    Log.d(TAG, "Sending " + BluetoothByteList.contentTypeToString(thisByteList.getContentType()) + " to " + wheelStr + " wheel...");
+
                     switch (thisWheelLoc) {
                         case Constants.ID_FRONT:
                             if (mFrontManagerThread == null) {
                                 // If we are trying to send something to the front wheel, but we aren't connected, then don't try to send anything
+                                Log.w(TAG, "Attempting to send to front wheel, but it is not connected.");
                                 continue;
                             }
                             break;
                         case Constants.ID_REAR:
                             if (mRearManagerThread == null) {
                                 // If we are trying to send something to the rear wheel, but we aren't connected, then don't try to send anything
+                                Log.w(TAG, "Attempting to send to rear wheel, but it is not connected.");
                                 continue;
                             }
                             break;
@@ -156,14 +173,23 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
                             }
                         } catch (Exception e) {
                             // Uh-oh...
-                            Log.e(TAG, "Data transfer to device failed.");
+                            Log.w(TAG, "Data transfer to device failed.");
+                            return;
 //                        status = false;
                         }
 
                         // Wait for a response from the Arduino (TODO: See if the below code works...?)
                         // TODO ARDUINO SOON: Add confirmation message to Arduino protocol.  Should be sent every single message (probably should be this, but at end of receiving function, so it's ready to receive new data), or only when ready for new message?  If the latter, add if-statement to next line
-                        waitForData(BluetoothByteList.ContentType.SP_Confirm, thisWheelLoc);
+                        boolean waitSuccess = waitForData(BluetoothByteList.ContentType.SP_Confirm, thisWheelLoc);
+
+                        if (!waitSuccess) {
+                            return;
+                        } else {
+                            Log.d(TAG, "Received confirmation message, continuing...");
+                        }
                     }
+
+                    Log.d(TAG, "Data sent.");
                 }
             }
 
@@ -172,7 +198,7 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
                 sendToast("Timed out waiting for a confirmation", wheelLoc);
                 Log.e(TAG, "Timed out waiting for a confirmation");
             }
-        }.run();
+        }.start();
 
         return status;
     }
@@ -255,7 +281,9 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
             mConnectThread.close();
         }
 
+        // Create a new connection thread, and start it
         mConnectThread = new BluetoothConnectThread(device, wheelLoc);
+        mConnectThread.start();
     }
 
     public int deviceConnectionID(BluetoothDevice device) {
@@ -355,10 +383,11 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
     }
 
     private void manageSocketConnection(BluetoothSocket socket, int id, BluetoothDevice device) {
-        // Create a new manager thread and save it
+        // Create a new manager thread, start it, and save it
         // Called after a bluetooth device has been successfully connected (after a BluetoothConnectThread has concluded)
 
         ConnectionManagerThread newThread = new ConnectionManagerThread(socket, id, device);
+        newThread.start();
 
         switch (id) {
             case Constants.ID_REAR:
@@ -374,18 +403,21 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
     }
 
     // Thread subclass that handles connecting to a new device
-    private class BluetoothConnectThread extends Thread {
+    private class BluetoothConnectThread extends Thread implements Serializable {
         private int mID;
         private BluetoothDevice mDevice;
         private BluetoothAdapter mAdapter = BluetoothAdapter.getDefaultAdapter();
         private BluetoothSocket mSocket = null;
-        private UUID uuid = UUID.fromString("9ff9d5ec-30e0-4691-abcc-0827b4e7bcef");
-        private String TAG = "BluetoothConnectThread";
+        private UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+//        private UUID uuid = UUID.fromString("9ff9d5ec-30e0-4691-abcc-0827b4e7bcef");
+//        private String TAG = "BluetoothConnectThread";
 
         public BluetoothConnectThread(BluetoothDevice device, int id) {
+            Log.d(TAG, "Starting Connect Thread...");
             mID = id;
             mDevice = device;
 
+            Log.d(TAG, "Creating RFComm Socket from device.");
             try {
                 mSocket = mDevice.createRfcommSocketToServiceRecord(uuid);
             } catch (IOException e) {
@@ -399,15 +431,19 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
             // Stop discovery while trying to connect to the device
             mAdapter.cancelDiscovery(); // TODO: Is this working?  See no change in the available-adapter's view when a connection thread starts...
 
+            boolean connected = false;
             try {
                 // Try to form a connection
                 mSocket.connect();
+                connected = true;
+            } catch (IOException connectE) {
+                Log.w(TAG, "Could not connect to device using socket.");
+                close();
+            }
 
+            if (connected) {
                 // Manage the connection
                 manageSocketConnection(mSocket, mID, mDevice);
-            } catch (IOException connectE) {
-                Log.e(TAG, "Could not connect to device using socket.", connectE);
-                close();
             }
 
             // Remove reference to this thread
@@ -441,7 +477,7 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
 
     // Thread subclass that handles managing a running bluetooth connection
     // This class (along with a pretty sizable chunk of this project, but this class in particular) is built significantly off code from the Android Studio developer guide (https://developer.android.com/guide/topics/connectivity/bluetooth#ManageAConnection)
-    private class ConnectionManagerThread extends Thread {
+    private class ConnectionManagerThread extends Thread implements Serializable {
         private int mID;
         private final BluetoothSocket mSocket;
         private final BluetoothDevice mDevice;
@@ -451,6 +487,8 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
 
 
         ConnectionManagerThread(BluetoothSocket socket, int id, BluetoothDevice device) {
+            Log.d(TAG, "Starting Connection Manager Thread...");
+
             // Get the wheel id and bluetooth socket
             mID = id;
             mSocket = socket;
@@ -461,6 +499,7 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
             OutputStream tmpOut = null;
 
             // Acquire the input and output streams
+            Log.d(TAG, "Getting output stream...");
             try {
                 tmpOut = socket.getOutputStream();
             } catch (IOException e) {
@@ -469,6 +508,7 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
                 close(); // Close the connection
             }
 
+            Log.d(TAG, "Getting input stream...");
             try {
                 tmpIn = socket.getInputStream();
             } catch (IOException e) {
@@ -482,6 +522,7 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
             mOutStream = tmpOut;
 
             // Once the device is being managed, send a message to notify the program
+            Log.d(TAG, "Connected to device.");
             sendConnectMessage(mDevice, mID);
         }
 
@@ -508,22 +549,26 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
 
         public void run() {
             mBuffer = new byte[1024];
-            int numBytes; // bytes returned from read()
+            int numBytes = 0; // bytes returned from read()
+            boolean readData = false;
 
             // Keep listening to the InputStream until an exception occurs.
             while (true) {
                 try {
                     // Read from the InputStream (blocking call until data is available to read).
                     numBytes = mInStream.read(mBuffer);
+                    readData = true;
+                } catch (IOException e) {
+                    Log.d(TAG, "Input stream was disconnected");
+                    return;
+                }
 
+                if (readData) {
                     // Send the obtained bytes to the UI activity.
                     Message readMsg = mMasterHandler.obtainMessage(
                             Constants.MESSAGE_READ, numBytes, mID,
                             mBuffer);
                     readMsg.sendToTarget();
-                } catch (IOException e) {
-                    Log.d(TAG, "Input stream was disconnected", e);
-                    break;
                 }
             }
         }

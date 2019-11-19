@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Looper;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.constraint.ConstraintLayout;
@@ -55,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
     public static final int REQUEST_ENABLE_BT = 1001;
     public static final int REQUEST_WHEEL_ACTIVITY = 1002;
 
-    private static final String TAG = "Main Activity";
+    private static final String TAG = "Main_Activity";
 
     public static final String SHARED_PREF_FILE = "BIKE_LIGHTS";
 
@@ -605,6 +606,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
     private void bluetoothUploadWheelSettings() {
         // Upload the BWAs and brightness settings from both wheels (TODO Later: Perhaps, just do one at a time (i.e. can select individual wheels))?
+        Log.d(TAG, "Starting full wheel update...");
 
         BTC_Kalman curKalman = new BTC_Kalman(PreferenceManager.getDefaultSharedPreferences(this)); // TODO TESTING: Move this below the isWheelReady statement (just for looks)s
 
@@ -616,14 +618,14 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 //
 //        byte e = (byte) b;
 //        byte g = (byte) d;
-
-        BluetoothByteList bwaByteList = bwa_front.toByteList();
-        BluetoothByteList kalmanByteList = curKalman.toByteList();
-        BluetoothByteList brightnessByteList = new BTC_BrightnessScale(brightnessSeekbarToFloat(Constants.ID_FRONT)).toByteList();
-
-        Bike_Wheel_Animation bwaTest = Bike_Wheel_Animation.fromByteList(bwaByteList);
-        BTC_Kalman kalmanTest = BTC_Kalman.fromByteList(kalmanByteList);
-        BTC_BrightnessScale brightnessTest = BTC_BrightnessScale.fromByteList(brightnessByteList);
+//
+//        BluetoothByteList bwaByteList = bwa_front.toByteList();
+//        BluetoothByteList kalmanByteList = curKalman.toByteList();
+//        BluetoothByteList brightnessByteList = new BTC_BrightnessScale(brightnessSeekbarToFloat(Constants.ID_FRONT)).toByteList();
+//
+//        Bike_Wheel_Animation bwaTest = Bike_Wheel_Animation.fromByteList(bwaByteList);
+//        BTC_Kalman kalmanTest = BTC_Kalman.fromByteList(kalmanByteList);
+//        BTC_BrightnessScale brightnessTest = BTC_BrightnessScale.fromByteList(brightnessByteList);
         // *** TODO TESTING ***
 
 
@@ -640,20 +642,21 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
         // If any of the Android's values are different than the last recorded values from the Arduino, then send the new data
         if (isWheelReady(Constants.ID_FRONT)) {
-            if (!bwa_front.equals(arduino_last_bwa_front)) {
-                byteListsToSend.add(bwa_front.toByteList());
-                byteListDestinations.add(Constants.ID_FRONT);
-            }
+            // TODO TESTING: REMOVE ALL COMMENTS FROM CONDITIONALS!
+//            if (!bwa_front.equals(arduino_last_bwa_front)) {
+            byteListsToSend.add(bwa_front.toByteList());
+            byteListDestinations.add(Constants.ID_FRONT);
+//            }
 
-            if (!(brightnessSeekbarToFloat(Constants.ID_FRONT) == arduino_last_brightness_front)) {
-                byteListsToSend.add(new BTC_BrightnessScale(brightnessSeekbarToFloat(Constants.ID_FRONT)).toByteList());
-                byteListDestinations.add(Constants.ID_FRONT);
-            }
+//            if (!(brightnessSeekbarToFloat(Constants.ID_FRONT) == arduino_last_brightness_front)) {
+            byteListsToSend.add(new BTC_BrightnessScale(brightnessSeekbarToFloat(Constants.ID_FRONT)).toByteList());
+            byteListDestinations.add(Constants.ID_FRONT);
+//            }
 
-            if (!curKalman.equals(arduino_last_kalman_front)) {
-                byteListsToSend.add(curKalman.toByteList());
-                byteListDestinations.add(Constants.ID_FRONT);
-            }
+//            if (!curKalman.equals(arduino_last_kalman_front)) {
+            byteListsToSend.add(curKalman.toByteList());
+            byteListDestinations.add(Constants.ID_FRONT);
+//            }
         }
 
         if (isWheelReady(Constants.ID_REAR)) {
@@ -673,8 +676,12 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
             }
         }
 
+        Log.d(TAG, "Prepared all data, starting thread...");
+
         // Send each piece of data to the wheel consecutively
         mManager.sendBytesToDevice(byteListsToSend, byteListDestinations);
+
+        Log.d(TAG, "Full update thread started.");
     }
 
     private float brightnessSeekbarToFloat(int wheelLoc) {
@@ -908,32 +915,40 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
     private void requestFullUpdateFromWheel(final int wheelLoc) {
         // This function will spawn a thread that will request all of the relevant information from a wheel
-
         if (isWheelReady(wheelLoc)) {
-            // Create a BluetoothInteractionThread that will consecutively request all of the data that we want
-            new BluetoothInteractionThread(mManager) {
-                @Override
-                public void sendingOperations() {
-                    // First, request the Bike wheel animation
-                    requestData(BluetoothByteList.ContentType.BWA, wheelLoc);
+            bluetoothUploadWheelSettings(); // TODO TESTING: REMOVE LATER
 
-                    // Then request the Kalman data
-                    requestData(BluetoothByteList.ContentType.Kalman, wheelLoc);
-
-                    // Then request the storage data
-                    requestData(BluetoothByteList.ContentType.Storage, wheelLoc);
-
-                    // Finally, request the battery data
-                    requestData(BluetoothByteList.ContentType.Battery, wheelLoc);
-                }
-
-                @Override
-                public void timeoutFun(BluetoothByteList.ContentType contentType, int wheelLoc) {
-                    // If we have timed out, send an error toast
-                    sendWheelToast("Error retrieving " + BluetoothByteList.contentTypeToString(contentType) + ". Skipping.", wheelLoc);
-                    Log.e(TAG, "Could not receive " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel.");
-                }
-            }.run();
+//            Log.d(TAG, "Requesting full update from wheel...");
+//
+//            // Create a BluetoothInteractionThread that will consecutively request all of the data that we want
+//            new BluetoothInteractionThread(mManager) {
+//                @Override
+//                public void sendingOperations() {
+//
+//
+//                    // First, request the Bike wheel animation
+//                    requestData(BluetoothByteList.ContentType.BWA, wheelLoc);
+//                    // Then request the Kalman data
+//                    requestData(BluetoothByteList.ContentType.Kalman, wheelLoc);
+//
+//                    // Then request the storage data
+//                    requestData(BluetoothByteList.ContentType.Storage, wheelLoc);
+//
+//                    // Finally, request the battery data
+//                    requestData(BluetoothByteList.ContentType.Battery, wheelLoc);
+//
+//                    Log.d(TAG, "Reached end of update request thread.");
+//                }
+//
+//                @Override
+//                public void timeoutFun(BluetoothByteList.ContentType contentType, int wheelLoc) {
+//                    // If we have timed out, send an error toast
+//                    sendWheelToast("Error retrieving " + BluetoothByteList.contentTypeToString(contentType) + ". Skipping.", wheelLoc);
+//                    Log.e(TAG, "Could not receive " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel.");
+//                }
+//            }.start(); TODO: UNCOMMENT THIS FOR NORMAL OPERATION
+//
+//            Log.d(TAG, "Full update requested.");
         }
     }
 
@@ -958,7 +973,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                     sendWheelToast("Error retrieving " + BluetoothByteList.contentTypeToString(contentType) + ". Skipping.", wheelLoc);
                     Log.e(TAG, "Could not receive " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel.");
                 }
-            }.run();
+            }.start();
         }
     }
 
@@ -1073,116 +1088,120 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
                 BluetoothByteList readByteList = new BluetoothByteList(readBuf, readNumBytes);
 
-                // Since we now know what the information was, do different things depending on what we received
-                if (readByteList.isRequest()) {
-                    BluetoothByteList byteListToSend = new BluetoothByteList();
-                    switch (readByteList.getContentType()) {
-                        case BWA:
-                            switch (readWheelID) {
-                                case Constants.ID_FRONT:
-                                    byteListToSend = bwa_front.toByteList();
-                                    break;
-                                case Constants.ID_REAR:
-                                    byteListToSend = bwa_rear.toByteList();
-                                    break;
-                                default:
-                                    // Uh-oh...
-                                    return;
-                            }
-                            break;
-                        case Kalman:
-                            // Get a SharedPreferences object to find the Kalman Data
-                            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                try {
+                    // Since we now know what the information was, do different things depending on what we received
+                    if (readByteList.isRequest()) {
+                        BluetoothByteList byteListToSend = new BluetoothByteList();
+                        switch (readByteList.getContentType()) {
+                            case BWA:
+                                switch (readWheelID) {
+                                    case Constants.ID_FRONT:
+                                        byteListToSend = bwa_front.toByteList();
+                                        break;
+                                    case Constants.ID_REAR:
+                                        byteListToSend = bwa_rear.toByteList();
+                                        break;
+                                    default:
+                                        // Uh-oh...
+                                        return;
+                                }
+                                break;
+                            case Kalman:
+                                // Get a SharedPreferences object to find the Kalman Data
+                                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-                            // Create a Kalman object from the preferences, and turn it into a byte list
-                            byteListToSend = new BTC_Kalman(prefs).toByteList();
-                            break;
+                                // Create a Kalman object from the preferences, and turn it into a byte list
+                                byteListToSend = new BTC_Kalman(prefs).toByteList();
+                                break;
 
-                        case Brightness:
-                            // Get the data from the brightness scale, put it into a BTC_Brightness object, and convert it to a byte list (TODO: Check this is right?)
-                            byteListToSend = new BTC_BrightnessScale(brightnessSeekbarToFloat(readWheelID)).toByteList();
+                            case Brightness:
+                                // Get the data from the brightness scale, put it into a BTC_Brightness object, and convert it to a byte list (TODO: Check this is right?)
+                                byteListToSend = new BTC_BrightnessScale(brightnessSeekbarToFloat(readWheelID)).toByteList();
 
-                            break;
+                                break;
 
-                        case Power:
-                            // TODO SOON ARDUINO: Implement power state change packet on Arduino side
-                            switch (readWheelID) {
-                                case Constants.ID_FRONT:
-                                    byteListToSend = new BTC_PowerState(frontPowerSwitch.isChecked()).toByteList();
-                                    break;
-                                case Constants.ID_REAR:
-                                    byteListToSend = new BTC_PowerState(rearPowerSwitch.isChecked()).toByteList();
-                                    break;
-                                default:
-                                    // Uh-oh...
-                                    return;
-                            }
-                            break;
+                            case Power:
+                                // TODO SOON ARDUINO: Implement power state change packet on Arduino side
+                                switch (readWheelID) {
+                                    case Constants.ID_FRONT:
+                                        byteListToSend = new BTC_PowerState(frontPowerSwitch.isChecked()).toByteList();
+                                        break;
+                                    case Constants.ID_REAR:
+                                        byteListToSend = new BTC_PowerState(rearPowerSwitch.isChecked()).toByteList();
+                                        break;
+                                    default:
+                                        // Uh-oh...
+                                        return;
+                                }
+                                break;
 
-                        default:
-                            // Uh-oh...
-                            return;
+                            default:
+                                // Uh-oh...
+                                return;
+                        }
+
+                        // Send the byteListToSend object!
+                        mManager.sendBytesToDevice(byteListToSend, readWheelID);
+
+                    } else {
+                        // If this is not a request, then save the information that was sent to the Android
+                        switch (readByteList.getContentType()) {
+                            case BWA:
+                                // Create a BWA from the byte list that we just received
+                                Bike_Wheel_Animation newBWA = Bike_Wheel_Animation.fromByteList(readByteList);
+
+                                // Save the new BWA
+                                setArduinoBWA(newBWA, readWheelID);
+
+                                break;
+                            case Kalman:
+                                // Create a Kalman object from the byte list that we just received
+                                BTC_Kalman newKalman = BTC_Kalman.fromByteList(readByteList);
+
+                                // Save the Kalman object
+                                switch (readWheelID) {
+                                    case Constants.ID_FRONT:
+                                        arduino_last_kalman_front = newKalman;
+                                        break;
+                                    case Constants.ID_REAR:
+                                        arduino_last_kalman_rear = newKalman;
+                                        break;
+                                }
+
+                                setArduinoKalman(newKalman, readWheelID);
+                                break;
+
+                            case Battery:
+                                BTC_Battery newBattery = BTC_Battery.fromByteList(readByteList);
+
+                                // Update the GUI
+                                setBatteryGUIVal(newBattery.getBattery(), readWheelID);
+
+                                break;
+                            case Storage:
+                                BTC_Storage newStorage = BTC_Storage.fromByteList(readByteList);
+
+                                // Update the GUI
+                                setStorageGUIVal(newStorage.getRemaining(), newStorage.getTotal(), readWheelID);
+                                break;
+                            case Brightness:
+                                BTC_BrightnessScale newBrightnessScale = BTC_BrightnessScale.fromByteList(readByteList); // Convert the byte list to a Brightness scale
+
+                                setArduinoBrightness(brightnessFloatToInt(newBrightnessScale.getBrightnessScale()), readWheelID);
+                                break;
+                            case Power:
+                                // TODO SOON ARDUINO: Implement power state change on Arduino
+                                BTC_PowerState newPowerState = BTC_PowerState.fromByteList(readByteList);
+
+                                // Update the GUI
+                                setPowerStateGUIVal(newPowerState.getPowerState(), false, readWheelID);
+                                break;
+                        }
                     }
 
-                    // Send the byteListToSend object!
-                    mManager.sendBytesToDevice(byteListToSend, readWheelID);
-
-                } else {
-                    // If this is not a request, then save the information that was sent to the Android
-                    switch (readByteList.getContentType()) {
-                        case BWA:
-                            // Create a BWA from the byte list that we just received
-                            Bike_Wheel_Animation newBWA = Bike_Wheel_Animation.fromByteList(readByteList);
-
-                            // Save the new BWA
-                            setArduinoBWA(newBWA, readWheelID);
-
-                            break;
-                        case Kalman:
-                            // Create a Kalman object from the byte list that we just received
-                            BTC_Kalman newKalman = BTC_Kalman.fromByteList(readByteList);
-
-                            // Save the Kalman object
-                            switch (readWheelID) {
-                                case Constants.ID_FRONT:
-                                    arduino_last_kalman_front = newKalman;
-                                    break;
-                                case Constants.ID_REAR:
-                                    arduino_last_kalman_rear = newKalman;
-                                    break;
-                            }
-
-                            setArduinoKalman(newKalman, readWheelID);
-                            break;
-
-                        case Battery:
-                            BTC_Battery newBattery = BTC_Battery.fromByteList(readByteList);
-
-                            // Update the GUI
-                            setBatteryGUIVal(newBattery.getBattery(), readWheelID);
-
-                            break;
-                        case Storage:
-                            BTC_Storage newStorage = BTC_Storage.fromByteList(readByteList);
-
-                            // Update the GUI
-                            setStorageGUIVal(newStorage.getRemaining(), newStorage.getTotal(), readWheelID);
-                            break;
-                        case Brightness:
-                            BTC_BrightnessScale newBrightnessScale = BTC_BrightnessScale.fromByteList(readByteList); // Convert the byte list to a Brightness scale
-
-                            setArduinoBrightness(brightnessFloatToInt(newBrightnessScale.getBrightnessScale()), readWheelID);
-                            break;
-                        case Power:
-                            // TODO SOON ARDUINO: Implement power state change on Arduino
-                            BTC_PowerState newPowerState = BTC_PowerState.fromByteList(readByteList);
-
-                            // Update the GUI
-                            setPowerStateGUIVal(newPowerState.getPowerState(), false, readWheelID);
-                            break;
-                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error reading data from bluetooth device.", e);
                 }
-
                 break;
             case Constants.MESSAGE_WRITE:
                 byte[] writeBuf = (byte[]) msg.obj; // Message contents
