@@ -8,7 +8,7 @@ import to.us.suncloud.bikelights.common.ByteMath;
 // A class that will hold a raw byte list that will be automatically processed to be ready to send to the Arduino.  Pretty redundant with the ByteBuffer java.nio class, but...well, I already wrote most of this by the time I found that, and also, since C++ is on one side and Java is on the other, I like being pretty close to the byte-level mechanics of the stream, and I don't really trust ByteBuffer...
 public class BluetoothByteList {
     // Set some parameters for the message and header sizes
-    public static final int NUM_TOTAL_BYTES_PER_MESSAGE = 64;
+    public static final int NUM_TOTAL_BYTES_PER_MESSAGE = 32; //64;
     public static final int NUM_BYTES_PER_HEADER = 2;
     public static final int NUM_RAW_BYTES_PER_MESSAGE = NUM_TOTAL_BYTES_PER_MESSAGE - NUM_BYTES_PER_HEADER;
     public static final int MAX_NUM_MESSAGES = 2^4; // The current maximum number of messages that can be incorporated as a single communication; allows for 992 raw bytes of data
@@ -35,23 +35,23 @@ public class BluetoothByteList {
 
     public BluetoothByteList() {} // A blank byte list
 
-    public BluetoothByteList(byte[] incomingProcessedyteList, int numBytes) {
+    public BluetoothByteList(byte[] incomingProcessedByteList, int numBytes) {
         // Extract the "raw" byte list from the "processed" byte list that we just received from the Arduino (i.e. strip off connection-level metadata and store the rest)
 
         // Extract the header information
-        request = ByteMath.getBoolFromByte(incomingProcessedyteList[0], 7);
-        confirmation = ByteMath.getBoolFromByte(incomingProcessedyteList[0], 3);
+        request = ByteMath.getBoolFromByte(incomingProcessedByteList[0], 7);
+        confirmation = ByteMath.getBoolFromByte(incomingProcessedByteList[0], 3);
 
         if (confirmation) {
             content = ContentType.SP_Confirm; // If this is a confirmation message, then record so (Ugh, I was tired when I wrote this...maybe this is dumb)
         } else {
-            content = contentValToType(ByteMath.getNIntFromByte(incomingProcessedyteList[0], 3, 4)); // Otherwise, record the content type
+            content = contentValToType(ByteMath.getNIntFromByte(incomingProcessedByteList[0], 3, 4)); // Otherwise, record the content type
         }
 
         // Save the rest of the raw byte data to the rawByteList
         for (int byteNum = 0;byteNum < (numBytes - 1); byteNum++) {
             // Go through the byte list (except the first byte, which was just the header), and get the raw data (encapsulating as a Byte in the process)
-            rawByteList.add(incomingProcessedyteList[byteNum + 1]);
+            rawByteList.add(incomingProcessedByteList[byteNum + 1]);
         }
     }
 
@@ -136,7 +136,7 @@ public class BluetoothByteList {
     }
 
     public boolean isDoneReading() {
-        return readingBytePointerLoc > rawByteList.size();
+        return readingBytePointerLoc >= rawByteList.size(); // If the readingBytePointer location is pointing past the rawByteList (i.e. equal to the size)
     }
 
     public int startWriting() {
@@ -191,7 +191,7 @@ public class BluetoothByteList {
         // Create a byte list to send
         List<Byte> outList = new ArrayList<>(NUM_TOTAL_BYTES_PER_MESSAGE); // Preallocate the output byte list
 
-        if (isWriting) {
+            if (isWriting) {
             // If the byte list is writing mode, then write the information to an output list and send it along
             // If the byte list is not in writing mode, then output a blank byte list
 

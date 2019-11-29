@@ -489,8 +489,8 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
     private void updateBluetoothStatus() {
         // Check if either wheel is connected
-//        boolean connected = isWheelReady(Constants.ID_FRONT) || isWheelReady(Constants.ID_FRONT);
-        boolean connected = true; // TODO TESTING: Restore the above line when done testing BWA byte list!
+        boolean connected = isWheelReady(Constants.ID_FRONT) || isWheelReady(Constants.ID_FRONT);
+//        boolean connected = true; // TODO TESTING: Restore the above line when done testing BWA byte list!
 
         // Initialize parameters (to disconnected state)
         int stringID = R.string.bt_status_disconnected;
@@ -608,9 +608,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         // Upload the BWAs and brightness settings from both wheels (TODO Later: Perhaps, just do one at a time (i.e. can select individual wheels))?
         Log.d(TAG, "Starting full wheel update...");
 
-        BTC_Kalman curKalman = new BTC_Kalman(PreferenceManager.getDefaultSharedPreferences(this)); // TODO TESTING: Move this below the isWheelReady statement (just for looks)s
-
-        // *** TODO TESTING ***
+        // *** TO_DO TESTING ***
 //        byte a = (byte) 255;
 //        byte c = (byte) -1;
 //        int b = ByteMath.getUSByteFromSByte(a);
@@ -626,7 +624,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 //        Bike_Wheel_Animation bwaTest = Bike_Wheel_Animation.fromByteList(bwaByteList);
 //        BTC_Kalman kalmanTest = BTC_Kalman.fromByteList(kalmanByteList);
 //        BTC_BrightnessScale brightnessTest = BTC_BrightnessScale.fromByteList(brightnessByteList);
-        // *** TODO TESTING ***
+        // *** TO_DO TESTING ***
 
 
         // First, check if we are connected to either wheel
@@ -635,6 +633,8 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
             sendToast("Cannot upload data, no wheels are connected");
             return;
         }
+
+        BTC_Kalman curKalman = new BTC_Kalman(PreferenceManager.getDefaultSharedPreferences(this));
 
         // Prepare the data to be sent to both wheels
         List<BluetoothByteList> byteListsToSend = new ArrayList<>();
@@ -906,7 +906,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         sendConnectionToast(connected, wheelLoc);
 
         if (connected) {
-            requestFullUpdateFromWheel(wheelLoc);
+//            requestFullUpdateFromWheel(wheelLoc); // TODO TESTING     CHANGE AS SOON AS POSSIBLE!!!
         }
 
         // Update the GUI
@@ -916,39 +916,39 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
     private void requestFullUpdateFromWheel(final int wheelLoc) {
         // This function will spawn a thread that will request all of the relevant information from a wheel
         if (isWheelReady(wheelLoc)) {
-            bluetoothUploadWheelSettings(); // TODO TESTING: REMOVE LATER
+//            bluetoothUploadWheelSettings(); // TO_DO TESTING: REMOVE LATER
 
-//            Log.d(TAG, "Requesting full update from wheel...");
-//
-//            // Create a BluetoothInteractionThread that will consecutively request all of the data that we want
-//            new BluetoothInteractionThread(mManager) {
-//                @Override
-//                public void sendingOperations() {
-//
-//
-//                    // First, request the Bike wheel animation
-//                    requestData(BluetoothByteList.ContentType.BWA, wheelLoc);
-//                    // Then request the Kalman data
-//                    requestData(BluetoothByteList.ContentType.Kalman, wheelLoc);
-//
-//                    // Then request the storage data
-//                    requestData(BluetoothByteList.ContentType.Storage, wheelLoc);
-//
-//                    // Finally, request the battery data
-//                    requestData(BluetoothByteList.ContentType.Battery, wheelLoc);
-//
-//                    Log.d(TAG, "Reached end of update request thread.");
-//                }
-//
-//                @Override
-//                public void timeoutFun(BluetoothByteList.ContentType contentType, int wheelLoc) {
-//                    // If we have timed out, send an error toast
-//                    sendWheelToast("Error retrieving " + BluetoothByteList.contentTypeToString(contentType) + ". Skipping.", wheelLoc);
-//                    Log.e(TAG, "Could not receive " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel.");
-//                }
-//            }.start(); TODO: UNCOMMENT THIS FOR NORMAL OPERATION
-//
-//            Log.d(TAG, "Full update requested.");
+            Log.d(TAG, "Requesting full update from wheel...");
+
+            // Create a BluetoothInteractionThread that will consecutively request all of the data that we want
+            new BluetoothInteractionThread(mManager) {
+                @Override
+                public void sendingOperations() {
+
+
+                    // First, request the Bike wheel animation
+                    requestData(BluetoothByteList.ContentType.BWA, wheelLoc);
+                    // Then request the Kalman data
+                    requestData(BluetoothByteList.ContentType.Kalman, wheelLoc);
+
+                    // Then request the storage data
+                    requestData(BluetoothByteList.ContentType.Storage, wheelLoc);
+
+                    // Finally, request the battery data
+                    requestData(BluetoothByteList.ContentType.Battery, wheelLoc);
+
+                    Log.d(TAG, "Reached end of update request thread.");
+                }
+
+                @Override
+                public void timeoutFun(BluetoothByteList.ContentType contentType, int wheelLoc) {
+                    // If we have timed out, send an error toast
+                    sendWheelToast("Error retrieving " + BluetoothByteList.contentTypeToString(contentType) + ". Skipping.", wheelLoc);
+                    Log.e(TAG, "Could not receive " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel.");
+                }
+            }.start();
+
+            Log.d(TAG, "Full update requested.");
         }
     }
 
@@ -1094,6 +1094,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                         BluetoothByteList byteListToSend = new BluetoothByteList();
                         switch (readByteList.getContentType()) {
                             case BWA:
+                                Log.d(TAG, "Received BWA request.");
                                 switch (readWheelID) {
                                     case Constants.ID_FRONT:
                                         byteListToSend = bwa_front.toByteList();
@@ -1107,6 +1108,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                                 }
                                 break;
                             case Kalman:
+                                Log.d(TAG, "Received Kalman request.");
                                 // Get a SharedPreferences object to find the Kalman Data
                                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -1115,6 +1117,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                                 break;
 
                             case Brightness:
+                                Log.d(TAG, "Received Brightness request.");
                                 // Get the data from the brightness scale, put it into a BTC_Brightness object, and convert it to a byte list (TODO: Check this is right?)
                                 byteListToSend = new BTC_BrightnessScale(brightnessSeekbarToFloat(readWheelID)).toByteList();
 
@@ -1122,6 +1125,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
                             case Power:
                                 // TODO SOON ARDUINO: Implement power state change packet on Arduino side
+                                Log.d(TAG, "Received Power State request.");
                                 switch (readWheelID) {
                                     case Constants.ID_FRONT:
                                         byteListToSend = new BTC_PowerState(frontPowerSwitch.isChecked()).toByteList();
@@ -1147,6 +1151,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                         // If this is not a request, then save the information that was sent to the Android
                         switch (readByteList.getContentType()) {
                             case BWA:
+                                Log.d(TAG, "Received BWA.");
                                 // Create a BWA from the byte list that we just received
                                 Bike_Wheel_Animation newBWA = Bike_Wheel_Animation.fromByteList(readByteList);
 
@@ -1155,6 +1160,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
                                 break;
                             case Kalman:
+                                Log.d(TAG, "Received Kalman.");
                                 // Create a Kalman object from the byte list that we just received
                                 BTC_Kalman newKalman = BTC_Kalman.fromByteList(readByteList);
 
@@ -1172,6 +1178,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                                 break;
 
                             case Battery:
+                                Log.d(TAG, "Received Battery Info.");
                                 BTC_Battery newBattery = BTC_Battery.fromByteList(readByteList);
 
                                 // Update the GUI
@@ -1179,17 +1186,20 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
                                 break;
                             case Storage:
+                                Log.d(TAG, "Received Storage Info.");
                                 BTC_Storage newStorage = BTC_Storage.fromByteList(readByteList);
 
                                 // Update the GUI
                                 setStorageGUIVal(newStorage.getRemaining(), newStorage.getTotal(), readWheelID);
                                 break;
                             case Brightness:
+                                Log.d(TAG, "Received Brightness Info.");
                                 BTC_BrightnessScale newBrightnessScale = BTC_BrightnessScale.fromByteList(readByteList); // Convert the byte list to a Brightness scale
 
                                 setArduinoBrightness(brightnessFloatToInt(newBrightnessScale.getBrightnessScale()), readWheelID);
                                 break;
                             case Power:
+                                Log.d(TAG, "Received Power State.");
                                 // TODO SOON ARDUINO: Implement power state change on Arduino
                                 BTC_PowerState newPowerState = BTC_PowerState.fromByteList(readByteList);
 
@@ -1203,14 +1213,14 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
                     Log.e(TAG, "Error reading data from bluetooth device.", e);
                 }
                 break;
-            case Constants.MESSAGE_WRITE:
-                byte[] writeBuf = (byte[]) msg.obj; // Message contents
-                int writeNumBytes = msg.arg1; // Length of the message
-                int writeWheelID = msg.arg2; // Source of the message
-                String writeString = new String(writeBuf);
-                // TO_DO: Process the written string (if needed)
-
-                break;
+//            case Constants.MESSAGE_WRITE:
+//                byte[] writeBuf = (byte[]) msg.obj; // Message contents
+//                int writeNumBytes = msg.arg1; // Length of the message
+//                int writeWheelID = msg.arg2; // Source of the message
+//                String writeString = new String(writeBuf);
+//                // TO_DO: Process the written string (if needed)
+//
+//                break;
             case Constants.MESSAGE_TOAST:
                 sendWheelToast(msg.getData().getString(Constants.TOAST), msg.arg2);
                 break;

@@ -161,6 +161,10 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
                         // First, get the message to be sent
                         byte[] thisSubMessage = thisByteList.getNextProcessedByteList();
 
+                        // Next, let the BluetoothInteractionThread know that we are going to be waiting for a confirmation message
+                        setContentToWaitFor(BluetoothByteList.ContentType.SP_Confirm, thisWheelLoc);
+
+                        // TODO SOON: Start waiting for a confirmation message BEFORE we write our data, because we're expecting it VERY soon after sending our data.  Make another function to set the kind of data we're waiting for, so that the BluetoothInteractionThread will throw the isWaiting flag, and wait for the isWaiting flag to change AFTER sending
                         // Then, send the processed byte list to the device indicated
                         try {
                             switch (thisWheelLoc) {
@@ -179,8 +183,7 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
                         }
 
                         // Wait for a response from the Arduino (TODO: See if the below code works...?)
-                        // TODO ARDUINO SOON: Add confirmation message to Arduino protocol.  Should be sent every single message (probably should be this, but at end of receiving function, so it's ready to receive new data), or only when ready for new message?  If the latter, add if-statement to next line
-                        boolean waitSuccess = waitForData(BluetoothByteList.ContentType.SP_Confirm, thisWheelLoc);
+                        boolean waitSuccess = waitForData();
 
                         if (!waitSuccess) {
                             return;
@@ -196,7 +199,7 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
             @Override
             public void timeoutFun(BluetoothByteList.ContentType contentType, int wheelLoc) {
                 sendToast("Timed out waiting for a confirmation", wheelLoc);
-                Log.e(TAG, "Timed out waiting for a confirmation");
+                Log.w(TAG, "Timed out waiting for a confirmation");
             }
         }.start();
 
