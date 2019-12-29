@@ -13,6 +13,7 @@ import android.graphics.Typeface;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,6 +56,7 @@ public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<Blue
         }
 
         public abstract void bind(int position);
+        public abstract void unregister();
     }
 
     public class emptyViewHolder extends  bindViewHolder {
@@ -95,6 +97,11 @@ public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<Blue
 
         @Override
         public void bind(int position) {
+        }
+
+        @Override
+        public void unregister() {
+            mContext.unregisterReceiver(mReceiver);
         }
     }
 
@@ -316,6 +323,11 @@ public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<Blue
             updateDeviceStatus();
         }
 
+        public void unregister() {
+            // Unregister the viewholder from the context
+            mLayoutView.getContext().unregisterReceiver(receiver);
+        }
+
         private void updateDeviceStatus() {
             if (mDevice != null) {
                 // Check which wheel the device is attached to (if any)
@@ -346,6 +358,12 @@ public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<Blue
                 layoutView = inflater.inflate(R.layout.bluetooth_viewholder, parent, false);
                 return new ViewHolder(layoutView, mManager);
         }
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(@NonNull bindViewHolder holder) {
+        holder.unregister();
+        super.onViewDetachedFromWindow(holder);
     }
 
     @Override

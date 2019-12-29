@@ -93,7 +93,7 @@ public class ByteMath {
     }
 
     static public float getFloatFromByteArray(List<Byte> byteArray) {
-        return Float.intBitsToFloat(Integer.reverse((int) getLongIntFromByteArray(byteArray)));
+        return Float.intBitsToFloat((int) getLongIntFromByteArray(byteArray));
     }
 
     // Test function (do not use!)

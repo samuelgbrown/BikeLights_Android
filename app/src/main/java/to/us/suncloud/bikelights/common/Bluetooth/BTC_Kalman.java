@@ -2,6 +2,7 @@ package to.us.suncloud.bikelights.common.Bluetooth;
 
 import android.content.SharedPreferences;
 
+import java.lang.ref.PhantomReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +22,14 @@ public class BTC_Kalman {
         this.Q = Q;
         this.R = R;
         this.P = P;
+    }
+
+    public BTC_Kalman(BTC_Kalman otherKalman) {
+        this.n_obs = otherKalman.n_obs;
+        this.n_sta = otherKalman.n_sta;
+        this.Q = otherKalman.Q;
+        this.R = otherKalman.R;
+        this.P = otherKalman.P;
     }
 
     public BTC_Kalman(SharedPreferences preferences) {
@@ -86,6 +95,22 @@ public class BTC_Kalman {
         }
     }
 
+    public BTC_Kalman clone() {
+        return new BTC_Kalman(this);
+    }
+
+    public boolean equals(Object obj) {
+        if (obj instanceof BTC_Kalman) {
+            boolean numsEqual = this.n_obs == ((BTC_Kalman) obj).n_obs && this.n_sta == ((BTC_Kalman) obj).n_sta;
+            boolean QEqual = this.Q == ((BTC_Kalman) obj).Q;
+            boolean REqual = this.R == ((BTC_Kalman) obj).R;
+            boolean PEqual = this.P == ((BTC_Kalman) obj).P;
+
+            return numsEqual && QEqual && REqual && PEqual;
+        } else {
+            return false;
+        }
+    }
 
     public int getN_obs() {
         return n_obs;

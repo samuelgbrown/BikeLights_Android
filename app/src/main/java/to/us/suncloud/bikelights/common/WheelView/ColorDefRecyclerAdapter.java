@@ -44,7 +44,7 @@ public class ColorDefRecyclerAdapter extends ColorDefRecyclerView.Adapter<ColorD
     private static final int VIEWTYPE_COLOROBJ_S = 1; // Used to refer to a view that describes a static colorObj
     private static final int VIEWTYPE_COLOROBJ_D = 2; // Used to refer to a view that describes a dynamic colorObj
 
-    private static final long MAX_UINT32_VAL = 2^32 - 1;
+    private static final long MAX_UINT32_VAL = (long) Math.pow(2,32) - 1;
 
     private static final float[] LEDWhiteRatio = {1f, 1f, 1.2f};
 

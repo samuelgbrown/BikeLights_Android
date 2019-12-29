@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +28,10 @@ import to.us.suncloud.bikelights.common.Constants;
 
 public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, Serializable {
     private static final String TAG = "Connection_Manager";
+
+    private static final int MAX_INPUT_BUFFER_SIZE = 1024;
+    private static final int COMPLETE_SIG_NUM = 10;
+    private static final int MAX_WAIT_MILLISECONDS = 5000; // Maximum wait time in milliseconds
 
     private FragmentActivity context;
 
@@ -134,7 +139,12 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
                             break;
                     }
 
-                    Log.d(TAG, "Sending " + BluetoothByteList.contentTypeToString(thisByteList.getContentType()) + " to " + wheelStr + " wheel...");
+                    String requestStr = "";
+                    if (thisByteList.isRequest()) {
+                        requestStr = " request";
+                    }
+
+                    Log.d(TAG, "Sending " + BluetoothByteList.contentTypeToString(thisByteList.getContentType()) + requestStr + " to " + wheelStr + " wheel...");
 
                     switch (thisWheelLoc) {
                         case Constants.ID_FRONT:
@@ -156,15 +166,18 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
                     // First, initialize the write
                     thisByteList.startWriting();
 
-                    // Send a single 64-byte message (with 2-byte header)
-                    while (!thisByteList.isDoneReading()) {
+                    boolean firstMessage = true; // Make sure that the loop runs at least once, particularly for requests (There is probably a better way to do this, e.g. querying if the byteList has sent any data [if the pointer location is past the PROCESSED byte list size, not just the raw byte list size, which is 0 for a request], but...I'm lazy)
+
+                    // Send a single 32-byte message (with 2-byte header)
+                    while (firstMessage || !thisByteList.isDoneReading()) {
                         // First, get the message to be sent
                         byte[] thisSubMessage = thisByteList.getNextProcessedByteList();
 
-                        // Next, let the BluetoothInteractionThread know that we are going to be waiting for a confirmation message
-                        setContentToWaitFor(BluetoothByteList.ContentType.SP_Confirm, thisWheelLoc);
+                        if (!thisByteList.isRequest()) {
+                            // Next, let the BluetoothInteractionThread know that we are going to be waiting for a confirmation message
+                            setContentToWaitFor(BluetoothByteList.ContentType.SP_Confirm, thisWheelLoc);
+                        }
 
-                        // TODO SOON: Start waiting for a confirmation message BEFORE we write our data, because we're expecting it VERY soon after sending our data.  Make another function to set the kind of data we're waiting for, so that the BluetoothInteractionThread will throw the isWaiting flag, and wait for the isWaiting flag to change AFTER sending
                         // Then, send the processed byte list to the device indicated
                         try {
                             switch (thisWheelLoc) {
@@ -182,14 +195,18 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
 //                        status = false;
                         }
 
-                        // Wait for a response from the Arduino (TODO: See if the below code works...?)
+                        // Wait for a response from the Arduino
                         boolean waitSuccess = waitForData();
 
                         if (!waitSuccess) {
                             return;
                         } else {
-                            Log.d(TAG, "Received confirmation message, continuing...");
+                            if (!thisByteList.isRequest()) {
+                                Log.d(TAG, "Received confirmation message, continuing...");
+                            }
                         }
+
+                        firstMessage = false; // This is no longer the first message
                     }
 
                     Log.d(TAG, "Data sent.");
@@ -537,7 +554,7 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
 
                 // Share the sent message with the UI activity.
                 Message writtenMsg = mMasterHandler.obtainMessage(
-                        Constants.MESSAGE_WRITE, numBytes, mID, mBuffer);
+                        Constants.MESSAGE_WRITE, numBytes, mID, bytes);
                 writtenMsg.sendToTarget();
             } catch (IOException e) {
                 Log.e(TAG, "Error occurred when sending data", e);
@@ -551,29 +568,133 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
         }
 
         public void run() {
-            mBuffer = new byte[1024];
-            int numBytes = 0; // bytes returned from read()
-            boolean readData = false;
 
             // Keep listening to the InputStream until an exception occurs.
+            List<Byte> completeSignal = makeCompleteSignal();
             while (true) {
+                int numBytes = 0; // bytes returned from read()
+//                mBuffer = new byte[MAX_INPUT_BUFFER_SIZE];
+                List<Byte> completeBuffer = new ArrayList<>(); // All bytes that have been received
+                mBuffer = new byte[MAX_INPUT_BUFFER_SIZE];
+//                boolean readData = false;
+                Log.v(TAG, "Starting read...");
                 try {
                     // Read from the InputStream (blocking call until data is available to read).
-                    numBytes = mInStream.read(mBuffer);
-                    readData = true;
+//                    while (numBytes <= COMPLETE_SIG_NUM || !readComplete(mBuffer, numBytes)) {
+//                        numBytes += mInStream.read(mBuffer, numBytes, MAX_INPUT_BUFFER_SIZE - numBytes); // We're kind of trusting that there aren't any transmission errors or anything, otherwise we could get stuck in this blocking call forever...
+
+                    while (true) {
+                        // Read the incoming data to a byte array
+                        int readBytes = mInStream.read(mBuffer, 0, MAX_INPUT_BUFFER_SIZE);
+                        Log.d(TAG, "Received some data...(" + readBytes + " bytes)");
+
+                        // Convert the byte[] to a List<Byte>
+                        List<Byte> incomingByteList = new ArrayList<>(readBytes);
+                        for (int byteNum = 0; byteNum < readBytes; byteNum++) {
+                            incomingByteList.add(mBuffer[byteNum]);
+                        }
+
+                        // Add the new bytes to the complete byte list
+                        completeBuffer.addAll(incomingByteList);
+
+                        // See if this list has the completion signal in it
+                        int completeSigLoc = Collections.indexOfSubList(completeBuffer, completeSignal);
+                        while (completeSigLoc != -1) {
+                            // If we've found the completion signal, then take everything before it, and send it to any listening message handlers (without the completion signal)
+                            numBytes = completeSigLoc; // The number of bytes in this message
+                            List<Byte> thisMessage = new ArrayList<>(completeBuffer.subList(0, numBytes)); // The extracted message, when complete (without the completion signal)
+                            completeBuffer.subList(0, completeSigLoc + COMPLETE_SIG_NUM).clear(); // Remove the extracted message (including completion signal) from the complete mBuffer, to be added to later
+
+                            // Before sending the message downstream, check if there is another completed message in the completeBuffer
+                            if (completeBuffer.size() > 0) {
+                                completeSigLoc = Collections.indexOfSubList(completeBuffer, completeSignal); // Check if there is another completion signal in the buffer
+                            } else {
+                                completeSigLoc = -1;
+                            }
+
+                            // If there is no content to the actual message, for whatever reason, don't bother sending it downstream
+                            if (numBytes <= 0) {
+                                // Now that we've removed the complete signal from completeBuffer, just continue without sending the message on
+                                continue;
+                            }
+
+                            // Send the newly received message to any listening Handlers
+
+                            // Convert the List<Byte> to a byte[]
+                            byte[] thisMessageByteArray = new byte[numBytes];
+                            for (int byteNum = 0; byteNum < numBytes; byteNum++) {
+                                thisMessageByteArray[byteNum] = thisMessage.get(byteNum);
+                            }
+
+                            // Send the obtained bytes to the UI activity (and other Handlers)
+                            Log.d(TAG, "    Sending complete message...(" + numBytes + " bytes)");
+                            Message readMsg = mMasterHandler.obtainMessage(
+                                    Constants.MESSAGE_READ, numBytes, mID,
+                                    thisMessageByteArray);
+                            readMsg.sendToTarget();
+                        }
+                    }
+//                    // We have successfully read data!
+//                    Log.d(TAG, "Received full message.");
+//                    readData = true;
+
+                    // Get rid of the completion sequence at the end
+//                    numBytes -= COMPLETE_SIG_NUM;
+//                    mBuffer = Arrays.copyOfRange(mBuffer, 0, numBytes);
+
                 } catch (IOException e) {
-                    Log.d(TAG, "Input stream was disconnected");
+                    Log.e(TAG, "Input stream was disconnected");
+//                    readData = false;
                     return;
                 }
 
-                if (readData) {
-                    // Send the obtained bytes to the UI activity.
-                    Message readMsg = mMasterHandler.obtainMessage(
-                            Constants.MESSAGE_READ, numBytes, mID,
-                            mBuffer);
-                    readMsg.sendToTarget();
+            }
+        }
+
+        private List<Byte> makeCompleteSignal() {
+            List<Byte> completeSig = new ArrayList<>(COMPLETE_SIG_NUM);
+            for (int i = 0; i < COMPLETE_SIG_NUM; i++) {
+                completeSig.add((byte) i);
+            }
+            return completeSig;
+        }
+
+        private boolean readComplete(byte[] buffer, int numBytesRead) {
+            // Check if the complete signal was sent from Arduino.  The signal is to count from 0, COMPLETE_SIG_NUM number of times, one value for each byte.
+            int readSignalRepNum = 0;
+            for (int byteLoc = 0; byteLoc < numBytesRead; byteLoc++) {
+                if (buffer[byteLoc] == readSignalRepNum) {
+                    // We may have found the read signal, iterate the counter of signals we have read in a row
+                    readSignalRepNum++;
+
+                    if (readSignalRepNum >= COMPLETE_SIG_NUM) {
+                        // If we have read COMPLETE_SIG_NUM of the read complete signal byte in a row, then the signal exists in the mBuffer, so return from the function successfully
+                        return true;
+                    }
+                } else {
+                    // Turns out this wasn't actually a read signal, just a coincidence...clear the coutner
+                    readSignalRepNum = 0;
                 }
             }
+
+//            int nextConfirmVal = COMPLETE_SIG_NUM - 1;
+//            for (int byteLoc = numBytesRead - 1; numBytesRead >= 0; numBytesRead--) {
+//                if (mBuffer[byteLoc] != nextConfirmVal) {
+//                    // If this is not a confirmation message, then exit the function
+//                    break;
+//                }
+//
+//                if (nextConfirmVal == 0) {
+//                    // If we have successfully confirmed the confirmation signal, then exit with a positive result
+//                    return true;
+//                }
+//                nextConfirmVal--;
+//            }
+
+
+//            Log.d(TAG, "    Data incomplete...");
+            return false;
+
         }
 
         // Call this method from the main activity to shut down the connection.

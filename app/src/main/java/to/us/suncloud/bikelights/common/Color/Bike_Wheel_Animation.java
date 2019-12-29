@@ -24,7 +24,7 @@ public class Bike_Wheel_Animation implements Serializable {
     private ArrayList<Integer> mImageIdle; // Initialize the mImageMain
 
     // Meta data
-    private ImageMeta_ mImageMainMeta = new Image_Meta_ConstRot_WRel(0); // The meta data for this Bike_Wheel_Animation
+    private ImageMeta_ mImageMainMeta = new Image_Meta_ConstRot_GRel(0); // The meta data for this Bike_Wheel_Animation
     private ImageMeta_ mImageIdleMeta = new Image_Meta_ConstRot_WRel(0); // The meta data for this Bike_Wheel_Animation
 //    private float brightnessScale = 1; // TO_DO: (Still doing?) Use colorObj#scale to generate new colorObj's with a brightness scale GIVEN BY THE MAIN ACTIVITY.  Value between (0 1] that scales the brightness of all LED values (allows user to quickly and easily scale the brightness of the wheel as a whole)
 
@@ -432,7 +432,8 @@ public class Bike_Wheel_Animation implements Serializable {
 
             if (colorType == Proto_ColorType.STATIC) {
                 // Create a new Color_Static from the incoming bytes
-                colorObj c = new colorObj(rawByteList.getBytesAndIter(4)); // Get the colorObj that describes the color
+                List<Byte> colorObjList = rawByteList.getBytesAndIter(4);
+                colorObj c = new colorObj(colorObjList); // Get the colorObj that describes the color
                 newColor_ = new Color_Static(c); // Make the new Color_ a static Color_, described by the above colorObj
             } else {
                 // Create a new Color_d from the incoming bytes
