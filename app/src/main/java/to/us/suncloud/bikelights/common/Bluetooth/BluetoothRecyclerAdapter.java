@@ -233,9 +233,6 @@ public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<Blue
             // Connect to the device
             mManager.connectToDevice(mDevice, wheelID);
             updateDeviceStatus();
-
-            // Update the view
-            updateViewHolderGUI();
         }
 
         @Override
@@ -305,7 +302,6 @@ public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<Blue
                 if (mDevice.getAddress().equals(connectedDevice.getAddress())) {
                     // If the change in connection status happened to this device, then update the device's information from the ConnectionManager, and adjust the GUI
                     updateDeviceStatus();
-                    updateViewHolderGUI();
                 }
             }
         }
@@ -336,6 +332,8 @@ public class BluetoothRecyclerAdapter extends BluetoothRecyclerView.Adapter<Blue
                 // Check if the device is currently being connected to
                 mConnecting = mManager.deviceIsConnecting(mDevice);
             }
+
+            updateViewHolderGUI();
         }
 
     }

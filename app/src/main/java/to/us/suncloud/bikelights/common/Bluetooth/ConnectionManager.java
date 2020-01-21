@@ -284,15 +284,27 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
                 case Constants.ID_FRONT:
                     // Switch to the front manager, and remove from the rear
                     mFrontManagerThread = mRearManagerThread;
+                    mFrontManagerThread.setWheelID(Constants.ID_FRONT);
                     mRearManagerThread = null;
+
+                    // Send both a connect message and a disconnect message
+                    sendConnectMessage(mFrontManagerThread.getDevice(), Constants.ID_FRONT); // Connected to the rear wheel
+                    sendDisconnectMessage(mFrontManagerThread.getDevice(), Constants.ID_REAR); // Disconnected from the front wheel
                     break;
                 case Constants.ID_REAR:
                     // Switch to the rear manager, and remove from the front
                     mRearManagerThread = mFrontManagerThread;
+                    mRearManagerThread.setWheelID(Constants.ID_REAR);
                     mFrontManagerThread = null;
-                    ;
+
+                    // Send both a connect message and a disconnect message
+                    sendConnectMessage(mRearManagerThread.getDevice(), Constants.ID_REAR); // Connected to the rear wheel
+                    sendDisconnectMessage(mRearManagerThread.getDevice(), Constants.ID_FRONT); // Disconnected from the front wheel
                     break;
             }
+
+            // Send a disconnect and a connect message
+
             return;
         }
 
@@ -544,6 +556,11 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
             // Once the device is being managed, send a message to notify the program
             Log.d(TAG, "Connected to device.");
             sendConnectMessage(mDevice, mID);
+        }
+
+        public void setWheelID(int newID) {
+            // If the wheel that this thread is connected to gets switched, accept a new wheel ID
+            mID = newID;
         }
 
         public void write(byte[] bytes) {

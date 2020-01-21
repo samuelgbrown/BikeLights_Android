@@ -102,9 +102,9 @@ public class BTC_Kalman {
     public boolean equals(Object obj) {
         if (obj instanceof BTC_Kalman) {
             boolean numsEqual = this.n_obs == ((BTC_Kalman) obj).n_obs && this.n_sta == ((BTC_Kalman) obj).n_sta;
-            boolean QEqual = this.Q == ((BTC_Kalman) obj).Q;
-            boolean REqual = this.R == ((BTC_Kalman) obj).R;
-            boolean PEqual = this.P == ((BTC_Kalman) obj).P;
+            boolean QEqual = this.Q == ((BTC_Kalman) obj).getQ();
+            boolean REqual = this.R.equals(((BTC_Kalman) obj).getR());
+            boolean PEqual = this.P.equals(((BTC_Kalman) obj).getP());
 
             return numsEqual && QEqual && REqual && PEqual;
         } else {

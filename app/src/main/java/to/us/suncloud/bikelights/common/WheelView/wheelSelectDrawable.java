@@ -70,28 +70,36 @@ public class wheelSelectDrawable extends Drawable {
         frontPaint.setStrokeWidth(wheelWidth);
         frontPaint.setStyle(Paint.Style.STROKE);
 
-        switch (rearPState) {
-            case wheelOn:
-                switch (rearCState) {
-                    case wheelConnected:
+        switch (rearCState) {
+            case wheelConnected:
+                switch (rearPState) {
+                    case wheelOff:
                         rearPaint.setColor(c(R.color.wheelConnected));
-                    case wheelNotConnected:
+                        break;
+                    case wheelOn:
                         rearPaint.setColor(c(R.color.wheelOn));
+                        break;
                 }
-            case wheelOff:
+                break;
+            case wheelNotConnected:
                 rearPaint.setColor(c(R.color.wheelOff));
+                break;
         }
 
-        switch (frontPState) {
-            case wheelOn:
-                switch (frontCState) {
-                    case wheelConnected:
+        switch (frontCState) {
+            case wheelConnected:
+                switch (frontPState) {
+                    case wheelOff:
                         frontPaint.setColor(c(R.color.wheelConnected));
-                    case wheelNotConnected:
+                        break;
+                    case wheelOn:
                         frontPaint.setColor(c(R.color.wheelOn));
+                        break;
                 }
-            case wheelOff:
+                break;
+            case wheelNotConnected:
                 frontPaint.setColor(c(R.color.wheelOff));
+                break;
         }
 
         // Draw the wheels
