@@ -1,5 +1,7 @@
 package to.us.suncloud.bikelights.common.Bluetooth;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +9,8 @@ import to.us.suncloud.bikelights.common.ByteMath;
 
 // A class that will hold a raw byte list that will be automatically processed to be ready to send to the Arduino.  Pretty redundant with the ByteBuffer java.nio class, but...well, I already wrote most of this by the time I found that, and also, since C++ is on one side and Java is on the other, I like being pretty close to the byte-level mechanics of the stream, and I don't really trust ByteBuffer...
 public class BluetoothByteList {
+    private static final String TAG = "BluetoothByteList";
+
     // Set some parameters for the message and header sizes
     public static final int NUM_TOTAL_BYTES_PER_MESSAGE = 32; //64;
     public static final int NUM_BYTES_PER_HEADER = 2;
@@ -102,7 +106,7 @@ public class BluetoothByteList {
     public List<Byte> getBytes(int i, int length) {
         // Does NOT iterate any pointer
         int correctedLength = Math.min(length, rawByteList.size() - i); // Ensure that we do not try to get too many items from the list
-        return rawByteList.subList(i, i + correctedLength); // TODO: Check that this is the right call to the function...
+        return rawByteList.subList(i, i + correctedLength);
     }
 
     public List<Byte> getBytesAndIter(int length) {
@@ -110,7 +114,7 @@ public class BluetoothByteList {
         int minLength = rawByteList.size() - readingBytePointerLoc;
         int correctedLength = Math.min(length, minLength); // Ensure that we do not try to get too many items from the list
         int startInd = getPointerAndIter(correctedLength); // Get the starting location for the sub list
-        return rawByteList.subList(startInd, startInd + correctedLength); // TODO: Check that this is the right call to the function...
+        return rawByteList.subList(startInd, startInd + correctedLength);
     }
 
     public List<Byte> getNextMessage() {
@@ -158,7 +162,7 @@ public class BluetoothByteList {
 
         if (totalRequiredMessages > MAX_NUM_MESSAGES) {
             // Uh-oh...
-            // TODO: Write to the log?
+            Log.e(TAG, "Got a connection that requires a very large number of messages (" + totalRequiredMessages + " messages, while our maximum is " + MAX_NUM_MESSAGES + ".");
         }
 
         return totalRequiredMessages;

@@ -362,8 +362,36 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        // TODO SOON: Check if the bluetooth connection is "persisting" between pauses/resumes of the activity, and then starts/stops of the app
+        // Tell the connection manager to load the currently saved devices
+//        mManager.startConnections();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        // Tell the connection manager to save the currently stored devices
+//        mManager.stopConnections();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Tell the connection manager to store the currently connected devices
+//        mManager.pauseConnections();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+
+        // First, check if we need to reconnect to any previously disconnected devices
+//        mManager.resumeConnections();
 
         // Check that the number of LEDs/Kalman values from the Settings matches with everything that uses it
         int curNumLEDs = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(this).getString("num_leds", Integer.toString(getResources().getInteger(R.integer.num_leds)))); // Get the current number of LEDs
@@ -379,6 +407,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
             // Let the user know
             sendToast("The number of LEDs in wheel was changed, patterns were cleared.");
         }
+
         // Finally, check if the new settings make the current Arduino settings obsolete
         updateBluetoothStatus();
     }
@@ -534,7 +563,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
         // Set the string and background color for the status indicator
         bluetoothStatusText.setText(stringID);
-        bluetoothStatusTextBorder.setBackgroundResource(colorID); // TODO: Check if this works?
+        bluetoothStatusTextBorder.setBackgroundResource(colorID);
 
         // Set the upload and download button visibilities
         bluetoothUpload.setVisibility(uploadVis);
@@ -642,7 +671,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
         // If any of the Android's values are different than the last recorded values from the Arduino, then send the new data
         if (isWheelReady(Constants.ID_FRONT)) {
-            // TODO SOON: Should there be conditionals, or no?  Perhaps user should have option to re-upload in case something went wrong, because doing an immediate update request will be difficult, not to mention CONFIRMING the update request to let the user know something went wrong...
+            // TODO Later: Should there be conditionals, or no?  Perhaps user should have option to re-upload in case something went wrong, because doing an immediate update request will be difficult, not to mention CONFIRMING the update request to let the user know something went wrong...
 //            if (!bwa_front.equals(arduino_last_bwa_front)) {
             byteListsToSend.add(bwa_front.toByteList());
             byteListDestinations.add(Constants.ID_FRONT);
@@ -1171,7 +1200,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
                             case Brightness:
                                 Log.d(TAG, "Received Brightness request.");
-                                // Get the data from the brightness scale, put it into a BTC_Brightness object, and convert it to a byte list (TODO: Check this is right?)
+                                // Get the data from the brightness scale, put it into a BTC_Brightness object, and convert it to a byte list
                                 byteListToSend = new BTC_BrightnessScale(brightnessSeekbarToFloat(readWheelID)).toByteList();
 
                                 break;

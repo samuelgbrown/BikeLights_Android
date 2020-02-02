@@ -139,7 +139,7 @@ public class BTC_Kalman {
 
         // First, send the BTC_Kalman meta data (number of observed and state variables)
         byte numVarsByte = 0;
-        numVarsByte = ByteMath.putDataToByte(numVarsByte, (byte) n_obs, 4, 4); // TODO: Check with online compiler, can we just convert an int to a byte?  Probably because it's below 127, but still may want to check...
+        numVarsByte = ByteMath.putDataToByte(numVarsByte, (byte) n_obs, 4, 4);
         numVarsByte = ByteMath.putDataToByte(numVarsByte, (byte) n_sta, 4, 0);
         rawByteList.addByte(numVarsByte);
 

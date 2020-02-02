@@ -548,7 +548,7 @@ public class Bike_Wheel_Animation implements Serializable {
 
             // Extract the required information
             int imageTypeIdle = ByteMath.getNIntFromByte(idleImageMetaDataByte, 8, 0); // Of what type is the idle image?
-            int imageParamIdle = (int) idleImageParamByte; // What is the parameter for the idle image? (keep as 2's complement TODO: Do the same for the other rotation, and any other signed bytes?)
+            int imageParamIdle = (int) idleImageParamByte; // What is the parameter for the idle image? (keep as 2's complement)
 
             ImageMeta_ idleImageMeta;
             switch (imageTypeIdle) {

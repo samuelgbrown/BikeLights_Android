@@ -25,9 +25,12 @@ import java.util.List;
 import java.util.UUID;
 
 import to.us.suncloud.bikelights.common.Constants;
+import to.us.suncloud.bikelights.common.LocalPersistence;
 
 public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, Serializable {
     private static final String TAG = "Connection_Manager";
+
+    private static final String Connection_File = "CONN_FILE";
 
     private static final int MAX_INPUT_BUFFER_SIZE = 1024;
     private static final int COMPLETE_SIG_NUM = 10;
@@ -77,6 +80,26 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
             }
         }
     };
+
+    public void startConnections() {
+        // When the activity starts, the currently saved device information on the disk should be moved to this object, so we can connect to them when the activity resumes
+        loadStoredDevices();
+    }
+
+    public void stopConnections() {
+        // When the activity stops, the currently stored device information should be saved to disk
+        saveStoredDevices();
+    }
+
+    public void pauseConnections() {
+        // When the activity pauses, the currently connected device information should be stored
+        storeDevicesAndCloseManagedThreads();
+    }
+
+    public void resumeConnections() {
+        // When the activity resumes, the previously connected devices should be connected to again, if possible
+        attemptReconnectToStoredDevices();
+    }
 
     public ConnectionManager(Activity mainActivity) {
         context = (FragmentActivity) mainActivity;
@@ -128,7 +151,6 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
                     BluetoothByteList thisByteList = byteListList.get(listInd);
                     int thisWheelLoc = wheelLocs.get(listInd);
 
-                    // TODO TESTING
                     String wheelStr = "unknown";
                     switch (thisWheelLoc) {
                         case Constants.ID_FRONT:
@@ -759,6 +781,51 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
             // If there is a front wheel bluetooth device
             mRearStoredDevice = mRearManagerThread.getDevice();
             mRearManagerThread.close();
+        }
+    }
+
+    private void saveStoredDevices() {
+        // Save the currently stored devices to disk, so we can recover the connection when the activity is resumed again
+        ArrayList<BluetoothDevice> toStoreArray = new ArrayList<>(2);
+
+        if (mFrontStoredDevice != null) {
+            // If there is a currently store front device, then save it
+            toStoreArray.set(0, mFrontStoredDevice);
+        } else if (mFrontManagerThread != null) {
+            // If the stored device is null, see if there is a currently managed device (which is shouldn't be, if we got here...)
+            toStoreArray.set(0, mFrontManagerThread.getDevice());
+        }
+
+        if (mRearStoredDevice != null) {
+            // If there is a currently store front device, then save it
+            toStoreArray.set(1, mRearStoredDevice);
+        } else if (mRearManagerThread != null) {
+            // If the stored device is null, see if there is a currently managed device (which is shouldn't be, if we got here...)
+            toStoreArray.set(1,  mRearManagerThread.getDevice());
+        }
+
+        // Save these values to file
+        LocalPersistence.writeObjectToFile(context, toStoreArray, Connection_File);
+
+    }
+
+    // TODO: Write a loadStoreDevices() function, to read in the data stored in the previous function, and attempt to connect to said devices
+    private void loadStoredDevices() {
+        // Load the devices in from the file, and attempt to connect to them.
+        ArrayList<BluetoothDevice> readArray = (ArrayList<BluetoothDevice>) LocalPersistence.readObjectFromFile(context, Connection_File);
+
+        // If any devices are found, attempt to connect to them
+        if (readArray != null) {
+            if (readArray.get(0) != null) {
+                // If there was a stored front wheel, assign it to the stored device variable
+                mFrontStoredDevice = readArray.get(0);
+            }
+
+            if (readArray.get(1) != null) {
+                // If there was a stored rear wheel, assign it to the stored device variable
+                mRearStoredDevice = readArray.get(1);
+            }
+
         }
     }
 
