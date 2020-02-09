@@ -277,8 +277,8 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         registerReceiver(mManager.getBroadcastReceiver(), new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
 
         // Now that there is a connection manager, get updates from the wheel, if they are connected
-        requestFullUpdateFromWheel(Constants.ID_FRONT);
-        requestFullUpdateFromWheel(Constants.ID_REAR);
+        mManager.requestFullUpdateFromWheel(Constants.ID_FRONT);
+        mManager.requestFullUpdateFromWheel(Constants.ID_REAR);
 
         // Set the functions of the upload and download buttons
         bluetoothDownload.setOnClickListener(new View.OnClickListener() {
@@ -952,7 +952,7 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
 
         if (connected) {
             // If a device has just been connected to this wheel, then request data from it
-            requestFullUpdateFromWheel(wheelLoc);
+            mManager.requestFullUpdateFromWheel(wheelLoc);
         } else {
             // If a device has just been disconnected from this wheel, then clear all variables related to it
             clearWheelData(wheelLoc);
@@ -976,73 +976,9 @@ public class MainActivity extends AppCompatActivity implements NoBluetoothDialog
         // Brightness got set in the setArduinoBrightness() function call
     }
 
-    private void requestFullUpdateFromWheel(final int wheelLoc) {
-        // This function will spawn a thread that will request all of the relevant information from a wheel
-        if (isWheelReady(wheelLoc)) {
-//            bluetoothUploadWheelSettings(); // TO_DO TESTING: REMOVE LATER
-
-            Log.d(TAG, "Requesting full update from wheel...");
-
-            // Create a BluetoothInteractionThread that will consecutively request all of the data that we want
-            new BluetoothInteractionThread(mManager) {
-                @Override
-                public void sendingOperations() {
-                    // First, request the Bike wheel animation
-                    requestData(BluetoothByteList.ContentType.BWA, wheelLoc);
-
-                    // Then request the power state
-                    requestData(BluetoothByteList.ContentType.Power, wheelLoc);
-
-                    // Then request the brightness data
-                    requestData(BluetoothByteList.ContentType.Brightness, wheelLoc);
-
-                    // Then request the storage data
-                    requestData(BluetoothByteList.ContentType.Storage, wheelLoc);
-
-                    // Then request the battery data
-                    requestData(BluetoothByteList.ContentType.Battery, wheelLoc);
-
-                    // Finally, request the Kalman data
-                    requestData(BluetoothByteList.ContentType.Kalman, wheelLoc);
-
-                    Log.d(TAG, "Reached end of update request thread.");
-                }
-
-                @Override
-                public void timeoutFun(BluetoothByteList.ContentType contentType, int wheelLoc) {
-                    // If we have timed out, send an error toast
-                    sendWheelToast("Error retrieving " + BluetoothByteList.contentTypeToString(contentType) + ". Skipping.", wheelLoc);
-                    Log.e(TAG, "Could not receive " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel.");
-                }
-            }.start();
-
-            Log.d(TAG, "Full update requested.");
-        }
-    }
-
     private boolean isWheelReady(int wheelLoc) {
         // Is the selected wheel ready to send and receive information?
         return mCurrentBluetoothStatus && mManager.isWheelConnected(wheelLoc);
-    }
-
-    private void requestUpdateFromWheel(final BluetoothByteList.ContentType content, final int wheelLoc) {
-        // Create a BluetoothInteractionThread that will request the data that we want
-        if (isWheelReady(wheelLoc)) {
-            new BluetoothInteractionThread(mManager) {
-                @Override
-                public void sendingOperations() {
-                    // Request the information
-                    requestData(content, wheelLoc);
-                }
-
-                @Override
-                public void timeoutFun(BluetoothByteList.ContentType contentType, int wheelLoc) {
-                    // If we have timed out, send an error toast
-                    sendWheelToast("Error retrieving " + BluetoothByteList.contentTypeToString(contentType) + ". Skipping.", wheelLoc);
-                    Log.e(TAG, "Could not receive " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel.");
-                }
-            }.start();
-        }
     }
 
 

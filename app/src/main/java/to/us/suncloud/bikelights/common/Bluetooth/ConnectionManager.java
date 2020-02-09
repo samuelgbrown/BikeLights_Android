@@ -36,6 +36,10 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
     private static final int COMPLETE_SIG_NUM = 10;
     private static final int MAX_WAIT_MILLISECONDS = 5000; // Maximum wait time in milliseconds
 
+    private static boolean currentlyRequestingUpdate = false; // If the
+
+    private static ArrayList<BluetoothByteList.ContentType> dataToRequestUpdateAfter;
+
     private FragmentActivity context;
 
     private BluetoothMasterHandler mMasterHandler; // Handler to communicate with the connection thread
@@ -104,6 +108,12 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
     public ConnectionManager(Activity mainActivity) {
         context = (FragmentActivity) mainActivity;
 
+        // Make an ArrayList of data types that will cause a full update from the wheel if they are sent
+        dataToRequestUpdateAfter = new ArrayList<>();
+        dataToRequestUpdateAfter.add(BluetoothByteList.ContentType.BWA);
+        dataToRequestUpdateAfter.add(BluetoothByteList.ContentType.Storage);
+        dataToRequestUpdateAfter.add(BluetoothByteList.ContentType.Kalman);
+
         // Create a BluetoothMasterHandler, so that the bluetooth connections can communicate with any HandlerInt that is registered
         mMasterHandler = new BluetoothMasterHandler();
     }
@@ -123,6 +133,78 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
     public BroadcastReceiver getBroadcastReceiver() {
         // Return the broadcast receiver, so it can be registered and unregistered by the Activity.
         return br;
+    }
+
+    public void requestUpdateFromWheel(final BluetoothByteList.ContentType content, final int wheelLoc) {
+        // Create a BluetoothInteractionThread that will request the data that we want
+        if (isWheelConnected(wheelLoc) && !currentlyRequestingUpdate) {
+            new BluetoothInteractionThread(this) {
+                @Override
+                public void sendingOperations() {
+                    currentlyRequestingUpdate = true;
+
+                    // Request the information
+                    requestData(content, wheelLoc);
+
+                    currentlyRequestingUpdate = false;
+                }
+
+                @Override
+                public void timeoutFun(BluetoothByteList.ContentType contentType, int wheelLoc) {
+                    // If we have timed out, send an error toast
+                    sendToast("Error retrieving " + BluetoothByteList.contentTypeToString(contentType) + ". Skipping.", wheelLoc);
+                    Log.e(TAG, "Could not receive " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel.");
+                }
+            }.start();
+        }
+    }
+
+    public void requestFullUpdateFromWheel(final int wheelLoc) {
+        // This function will spawn a thread that will request all of the relevant information from a wheel
+        if (isWheelConnected(wheelLoc) && !currentlyRequestingUpdate) {
+//            bluetoothUploadWheelSettings(); // TO_DO TESTING: REMOVE LATER
+
+            Log.d(TAG, "Requesting full update from wheel...");
+
+            // Create a BluetoothInteractionThread that will consecutively request all of the data that we want
+            new BluetoothInteractionThread(this) {
+                @Override
+                public void sendingOperations() {
+                    currentlyRequestingUpdate = true;
+
+                    // First, request the Bike wheel animation
+                    requestData(BluetoothByteList.ContentType.BWA, wheelLoc);
+
+                    // Then request the power state
+                    requestData(BluetoothByteList.ContentType.Power, wheelLoc);
+
+                    // Then request the brightness data
+                    requestData(BluetoothByteList.ContentType.Brightness, wheelLoc);
+
+                    // Then request the storage data
+                    requestData(BluetoothByteList.ContentType.Storage, wheelLoc);
+
+                    // Then request the battery data
+                    requestData(BluetoothByteList.ContentType.Battery, wheelLoc);
+
+                    // Finally, request the Kalman data
+                    requestData(BluetoothByteList.ContentType.Kalman, wheelLoc);
+
+                    Log.d(TAG, "Reached end of update request thread.");
+
+                    currentlyRequestingUpdate = false;
+                }
+
+                @Override
+                public void timeoutFun(BluetoothByteList.ContentType contentType, int wheelLoc) {
+                    // If we have timed out, send an error toast
+                    sendToast("Error retrieving " + BluetoothByteList.contentTypeToString(contentType) + ". Skipping.", wheelLoc);
+                    Log.e(TAG, "Could not receive " + BluetoothByteList.contentTypeToString(contentType) + " from " + wheelLocToString(wheelLoc) + " wheel.");
+                }
+            }.start();
+
+            Log.d(TAG, "Full update requested.");
+        }
     }
 
     public boolean sendBytesToDevice(final List<BluetoothByteList> byteListList, final List<Integer> wheelLocs) {
@@ -146,6 +228,9 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
         new BluetoothInteractionThread(this) {
             @Override
             public void sendingOperations() {
+                boolean hasSentDataFront = false; // Has any data been sent to the front wheel (not a request)
+                boolean hasSentDataRear = false; // Has any data been sent to the rear wheel (not a request)
+
                 // Go through each byte list in the byteListList object
                 for (int listInd = 0; listInd < byteListList.size(); listInd++) {
                     BluetoothByteList thisByteList = byteListList.get(listInd);
@@ -168,22 +253,12 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
 
                     Log.d(TAG, "Sending " + BluetoothByteList.contentTypeToString(thisByteList.getContentType()) + requestStr + " to " + wheelStr + " wheel...");
 
-                    switch (thisWheelLoc) {
-                        case Constants.ID_FRONT:
-                            if (mFrontManagerThread == null) {
-                                // If we are trying to send something to the front wheel, but we aren't connected, then don't try to send anything
-                                Log.w(TAG, "Attempting to send to front wheel, but it is not connected.");
-                                continue;
-                            }
-                            break;
-                        case Constants.ID_REAR:
-                            if (mRearManagerThread == null) {
-                                // If we are trying to send something to the rear wheel, but we aren't connected, then don't try to send anything
-                                Log.w(TAG, "Attempting to send to rear wheel, but it is not connected.");
-                                continue;
-                            }
-                            break;
+                    if (!isWheelConnected(thisWheelLoc)) {
+                        // If we are trying to send something to the wheel, but we aren't connected, then don't try to send anything
+                        Log.w(TAG, "Attempting to send to wheel, but it is not connected.");
+                        continue;
                     }
+
 
                     // First, initialize the write
                     thisByteList.startWriting();
@@ -198,6 +273,18 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
                         if (!thisByteList.isRequest()) {
                             // Next, let the BluetoothInteractionThread know that we are going to be waiting for a confirmation message
                             setContentToWaitFor(BluetoothByteList.ContentType.SP_Confirm, thisWheelLoc);
+
+                            // If we are sending data that we want to confirm with a full wheel update, then store that fact, to be used after all of the data has been sent
+                            if (dataToRequestUpdateAfter.contains(thisByteList.getContentType())) {
+                                switch (thisWheelLoc) {
+                                    case Constants.ID_FRONT:
+                                        hasSentDataFront = true;
+                                        break;
+                                    case Constants.ID_REAR:
+                                        hasSentDataRear = true;
+                                        break;
+                                }
+                            }
                         }
 
                         // Then, send the processed byte list to the device indicated
@@ -232,6 +319,15 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
                     }
 
                     Log.d(TAG, "Data sent.");
+
+                    // TODO FIX: If actual data was sent (not simply a request for data), then request a full update from the wheel, to completely synchronize the devices
+//                    if (hasSentDataFront) {
+//                        requestFullUpdateFromWheel(Constants.ID_FRONT);
+//                    }
+//
+//                    if (hasSentDataRear) {
+//                        requestFullUpdateFromWheel(Constants.ID_REAR);
+//                    }
                 }
             }
 
@@ -278,6 +374,18 @@ public class ConnectionManager implements ReplaceDeviceDialog.ReplaceDeviceInt, 
             sendBytesToDevice(requestByteList, wheelLoc);
 
             // The response will be received by this ConnectionManager, and broadcast to all Handlers
+        }
+    }
+
+    private static String wheelLocToString(int wheelLoc) {
+        switch (wheelLoc) {
+            case Constants.ID_FRONT:
+                return "Front";
+
+            case Constants.ID_REAR:
+                return "Rear";
+            default:
+                return "Unknown";
         }
     }
 
