@@ -36,8 +36,8 @@ public class Color_dVel extends Color_d {
     }
 
     @Override
-    int getTScale() {
-        return 100; // One unit of T for the Color_dVel represents an LED/sec, which can be represented 1:100 in animation time
+    int getTStandardDistance() {
+        return 120; // The standard distance in T between new shades of this color
     }
 
     // New byte level manipulation functions

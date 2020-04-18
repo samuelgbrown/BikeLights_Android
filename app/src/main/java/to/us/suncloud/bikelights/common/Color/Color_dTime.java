@@ -36,8 +36,8 @@ public class Color_dTime extends Color_d {
     }
 
     @Override
-    int getTScale() {
-        return 1; // One unit of T for the Color_dTime represents a millisecond, which can be represented 1:1 in animation time
+    int getTStandardDistance() {
+        return 1000; // The standard difference in T between new shades of this color
     }
 
     // New byte level manipulation functions

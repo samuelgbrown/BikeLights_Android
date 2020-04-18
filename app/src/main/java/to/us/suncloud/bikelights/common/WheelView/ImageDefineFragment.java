@@ -253,8 +253,11 @@ public class ImageDefineFragment extends Fragment implements ImageModFragment.Im
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putSerializable(IMAGE_STACK, imageStack.getImagesList());
-        outState.putInt(IMAGE_LOC, imageStack.getCurStackLocation());
+        if (imageStack != null) {
+            // TODO: Not really sure why imageStack would ever be null here, but it is sometimes (when loading a Spinner Image)
+            outState.putSerializable(IMAGE_STACK, imageStack.getImagesList());
+            outState.putInt(IMAGE_LOC, imageStack.getCurStackLocation());
+        }
 //        outState.putInt(TEST_ID, thisTestID);
 //        outState.putSerializable(LED_DRAWABLE, ledViewDrawable);
 //        outState.putParcelable(ROOT_VIEW, rootView);

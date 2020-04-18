@@ -243,7 +243,7 @@ public abstract class Color_d extends Color_ {
                 ObjectAnimator thisAnim = ObjectAnimator.ofArgb(obj, param, colorStart, colorEnd);
 
                 // Set the duration of the color animation
-                int thisDur = Math.max(getTScale() * getTDifference(colorInd), 1);
+                int thisDur = Math.max(getTAnimationScale() * getTDifference(colorInd), 1);
                 thisAnim.setDuration(thisDur); // Make the animation take at least 1ms
 
                 // Set the type of transition of this animation
@@ -338,7 +338,10 @@ public abstract class Color_d extends Color_ {
         return (int) (c.get(ind + 1).getT() - c.get(ind).getT());
     }
 
-    abstract int getTScale();
+    abstract int getTStandardDistance(); // The multiplication factor for the animation (i.e. if equal to 100, then animation will run at 100 T value per second
+    public int getTAnimationScale() {
+        return Math.round(1000.0f / ((float) getTStandardDistance())); // Get the time scale of the animation for displaying this color
+    }
 
     @Override
     public boolean setColorObj(colorObj newColorObj, int index) {
@@ -416,7 +419,7 @@ public abstract class Color_d extends Color_ {
         long newT;
         long tDiff; // The difference between the old highest T and the new one
         if (getNumColors() == 1) {
-            tDiff = Math.round(1000.0f / ((float) getTScale()));
+            tDiff = getTStandardDistance();
         } else {
             tDiff = getTDifference(getNumColors() - 2);
         }

@@ -162,8 +162,15 @@ public class ImageDefinePagerAdapter extends FragmentStatePagerAdapter {
                 return tabTitles.length - 1;
             }
         } else {
-            // If the main fragment does not exist, then something has gone horribly wrong, but let's feign normalcy...
-            return tabTitles.length;
+            // If we are here, chances are that the ImageDefinePagerAdapter was JUST created. Therefore, our bikeWheelAnimation object is still up to date!  And it can be used to define how many tabs we should have (Main+Idle, or just Main).
+            // After this point, though, we should ask the Main tab, because it will have the most up-to-date version of the bikeWheelAnimation, at least with respect to how many tabs we should have, anyway.
+            if (bikeWheelAnimation.supportsIdle()) {
+                // Supports both main and idle
+                return tabTitles.length;
+            } else {
+                // Supports only idle
+                return tabTitles.length - 1;
+            }
         }
     }
 
